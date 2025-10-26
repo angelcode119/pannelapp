@@ -1,4 +1,4 @@
-name: Flutter Windows Build
+name: Flutter Android Build
 
 on:
   push:
@@ -8,30 +8,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build-apk:
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+      
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.5'
           channel: 'stable'
-      
-      - name: Enable Windows Desktop
-        run: flutter config --enable-windows-desktop
       
       - name: Install dependencies
         run: flutter pub get
       
-      - name: Build Windows app
-        run: flutter build windows --release
+      - name: Build APK
+        run: flutter build apk --release
       
-      - name: Upload Windows Build
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build
-          path: build/windows/x64/runner/Release/
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
