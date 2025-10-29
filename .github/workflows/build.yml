@@ -1,39 +1,374 @@
-name: Flutter Android Build
+name: Flutter Multi-Platform Build (Android, Web, Windows)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master, develop ]
   workflow_dispatch:
 
 jobs:
-  build-apk:
+  # ============================================
+  # 📱 ANDROID BUILD
+  # ============================================
+  build-android:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: 📥 Checkout کردن کد
+        uses: actions/checkout@v4
+
+      - name: ☕ نصب Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '21'
-      
-      - name: Setup Flutter
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 🎯 نصب Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      
-      - name: Install dependencies
+          cache: true
+
+      # Cache Flutter Dependencies
+      - name: 📦 Cache Flutter Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            **/.flutter-plugins
+            **/.flutter-plugin-dependencies
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # Cache Gradle
+      - name: 🚀 Cache Gradle Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 📦 نصب Dependencies
         run: flutter pub get
-      
-      - name: Build APK
-        run: flutter build apk --release
-      
-      - name: Upload APK
+
+      - name: 🔑 دسترسی اجرایی به gradlew
+        run: chmod +x android/gradlew
+
+      - name: 🧹 پاک کردن build قبلی
+        run: flutter clean
+
+      - name: 🏗️ ساخت APK Release
+        run: flutter build apk --release --split-per-abi
+
+      # تغییر نام APK ها
+      - name: 🔄 تغییر نام APK ها
+        run: |
+          BUILD_TIME=$(date +"%Y%m%d_%H%M%S")
+          BUILD_NUMBER=${{ github.run_number }}
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          
+          cd build/app/outputs/flutter-apk
+          
+          for apk in *.apk; do
+            if [[ $apk == *"arm64-v8a"* ]]; then
+              mv "$apk" "app-arm64-${BUILD_TIME}-build${BUILD_NUMBER}-${COMMIT_SHORT}.apk"
+            elif [[ $apk == *"armeabi-v7a"* ]]; then
+              mv "$apk" "app-arm32-${BUILD_TIME}-build${BUILD_NUMBER}-${COMMIT_SHORT}.apk"
+            elif [[ $apk == *"x86_64"* ]]; then
+              mv "$apk" "app-x64-${BUILD_TIME}-build${BUILD_NUMBER}-${COMMIT_SHORT}.apk"
+            else
+              mv "$apk" "app-universal-${BUILD_TIME}-build${BUILD_NUMBER}-${COMMIT_SHORT}.apk"
+            fi
+          done
+          
+          echo "✅ نام فایل‌های APK تغییر کرد!"
+          ls -lh
+
+      - name: 📦 آپلود APK ها
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: android-apks-build-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+      - name: 📤 ارسال APK به تلگرام
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+          
+          cd build/app/outputs/flutter-apk
+          
+          for apk in *.apk; do
+            APK_SIZE=$(du -h "$apk" | cut -f1)
+          
+            curl -F document=@"$apk" \
+            -F caption="📱 Android APK - Build موفق
+
+📦 فایل: ${apk}
+📏 حجم: ${APK_SIZE}
+  🔢 Build #${{ github.run_number }}
+📱 Branch: $BRANCH_NAME
+👤 Developer: ${{ github.actor }}
+💬 Commit: $COMMIT_MSG
+⏰ زمان: $BUILD_TIME
+🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+  https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}
+  
+  sleep 2
+  done
+
+  # ============================================
+  # 🌐 WEB BUILD
+  # ============================================
+  build-web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout کردن کد
+        uses: actions/checkout@v4
+
+      - name: 🎯 نصب Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Cache Flutter Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            **/.flutter-plugins
+            **/.flutter-plugin-dependencies
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: 📦 نصب Dependencies
+        run: flutter pub get
+
+      - name: 🧹 پاک کردن build قبلی
+        run: flutter clean
+
+      - name: 🌐 ساخت Web Build
+        run: flutter build web --release --web-renderer canvaskit
+
+      - name: 📦 فشرده‌سازی Web Build
+        run: |
+          BUILD_TIME=$(date +"%Y%m%d_%H%M%S")
+          BUILD_NUMBER=${{ github.run_number }}
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          
+          cd build
+          ZIP_NAME="web-${BUILD_TIME}-build${BUILD_NUMBER}-${COMMIT_SHORT}.zip"
+          zip -r $ZIP_NAME web/
+          
+          echo "✅ Web build فشرده شد: $ZIP_NAME"
+          ls -lh $ZIP_NAME
+
+      - name: 📦 آپلود Web Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build-${{ github.run_number }}
+          path: build/*.zip
+          retention-days: 30
+
+      - name: 📤 ارسال Web Build به تلگرام
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+          
+          cd build
+          WEB_ZIP=$(ls web-*.zip | head -n 1)
+          ZIP_SIZE=$(du -h "$WEB_ZIP" | cut -f1)
+          
+          curl -F document=@"$WEB_ZIP" \
+          -F caption="🌐 Web Build - Build موفق
+
+📦 فایل: ${WEB_ZIP}
+📏 حجم: ${ZIP_SIZE}
+  🔢 Build #${{ github.run_number }}
+📱 Branch: $BRANCH_NAME
+👤 Developer: ${{ github.actor }}
+💬 Commit: $COMMIT_MSG
+⏰ زمان: $BUILD_TIME
+🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+  https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}
+
+  # ============================================
+  # 🪟 WINDOWS BUILD
+  # ============================================
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: 📥 Checkout کردن کد
+        uses: actions/checkout@v4
+
+      - name: 🎯 نصب Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Cache Flutter Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\AppData\Local\Pub\Cache
+            **\.flutter-plugins
+            **\.flutter-plugin-dependencies
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: 📦 نصب Dependencies
+        run: flutter pub get
+
+      - name: 🧹 پاک کردن build قبلی
+        run: flutter clean
+
+      - name: 🪟 ساخت Windows Build
+        run: flutter build windows --release
+
+      - name: 📦 فشرده‌سازی Windows Build
+        shell: pwsh
+        run: |
+          $BUILD_TIME = Get-Date -Format "yyyyMMdd_HHmmss"
+          $BUILD_NUMBER = "${{ github.run_number }}"
+          $COMMIT_SHORT = git rev-parse --short HEAD
+          
+          $ZIP_NAME = "windows-${BUILD_TIME}-build${BUILD_NUMBER}-${COMMIT_SHORT}.zip"
+          
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "build\$ZIP_NAME"
+          
+          Write-Host "✅ Windows build فشرده شد: $ZIP_NAME"
+          Get-Item "build\$ZIP_NAME" | Format-List Name, Length
+
+      - name: 📦 آپلود Windows Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-${{ github.run_number }}
+          path: build/*.zip
+          retention-days: 30
+
+      - name: 📤 ارسال Windows Build به تلگرام
+        if: success()
+        shell: pwsh
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          $COMMIT_MSG = git log -1 --pretty=%B
+          $BRANCH_NAME = "${{ github.ref }}".Replace("refs/heads/", "")
+          $BUILD_TIME = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+          
+          $WIN_ZIP = Get-ChildItem "build\windows-*.zip" | Select-Object -First 1
+          $ZIP_SIZE = "{0:N2} MB" -f ($WIN_ZIP.Length / 1MB)
+          
+          $caption = @"
+  🪟 Windows Build - Build موفق
+
+📦 فایل: $($WIN_ZIP.Name)
+📏 حجم: $ZIP_SIZE
+  🔢 Build #${{ github.run_number }}
+📱 Branch: $BRANCH_NAME
+👤 Developer: ${{ github.actor }}
+💬 Commit: $COMMIT_MSG
+⏰ زمان: $BUILD_TIME
+🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  "@
+          
+          curl.exe -F "document=@$($WIN_ZIP.FullName)" `
+  -F "caption=$caption" `
+  "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendDocument?chat_id=$env:TELEGRAM_CHAT_ID"
+
+# ============================================
+# ❌ اطلاع خطا
+# ============================================
+notify-failure:
+  runs-on: ubuntu-latest
+  needs: [build-android, build-web, build-windows]
+  if: failure()
+
+  steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+
+    - name: ❌ ارسال پیام خطا به تلگرام
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        BRANCH_NAME=${GITHUB_REF#refs/heads/}
+        BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+        
+        curl -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+        -d chat_id=${TELEGRAM_CHAT_ID} \
+        -d parse_mode=HTML \
+        -d text="❌ <b>Build ناموفق!</b>
+
+  🔢 Build #${{ github.run_number }}
+📱 Branch: $BRANCH_NAME
+👤 Developer: ${{ github.actor }}
+💬 Commit: $COMMIT_MSG
+⏰ زمان: $BUILD_TIME
+  🔗 <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>مشاهده لاگ خطا</a>
+  
+  ⚠️ یکی از build ها با خطا مواجه شد. لطفا لاگ را بررسی کنید."
+
+# ============================================
+# ✅ اطلاع موفقیت
+# ============================================
+notify-success:
+  runs-on: ubuntu-latest
+  needs: [build-android, build-web, build-windows]
+  if: success()
+
+  steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+
+    - name: ✅ ارسال پیام موفقیت به تلگرام
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        BRANCH_NAME=${GITHUB_REF#refs/heads/}
+        BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+        
+        curl -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+        -d chat_id=${TELEGRAM_CHAT_ID} \
+        -d parse_mode=HTML \
+        -d text="✅ <b>همه Build ها موفق بودند! 🎉</b>
+
+  🔢 Build #${{ github.run_number }}
+📱 Branch: $BRANCH_NAME
+👤 Developer: ${{ github.actor }}
+💬 Commit: $COMMIT_MSG
+⏰ زمان: $BUILD_TIME
+  
+  📱 Android APKs ✅
+  🌐 Web Build ✅
+  🪟 Windows Build ✅
+  
+  🔗 <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>مشاهده جزئیات</a>"
