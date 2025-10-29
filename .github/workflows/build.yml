@@ -97,31 +97,49 @@ jobs:
           for apk in *.apk; do
             APK_SIZE=$(du -h "$apk" | cut -f1)
           
-            curl -F document=@"$apk" \
-            -F caption="Android APK Build
+            CAPTION="Android APK Build
+          
+          File: ${apk}
+          Size: ${APK_SIZE}
+          Build: #${{ github.run_number }}
+          Branch: ${BRANCH_NAME}
+          Developer: ${{ github.actor }}
+          Commit: ${COMMIT_MSG}
+          Time: ${BUILD_TIME}"
+          
+            curl -F document=@"${apk}" \
+                 -F caption="${CAPTION}" \
+                 https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}
+          
+            sleep 2
+          done
 
-File: ${apk}
-Size: ${APK_SIZE}
-Build: #${{ github.run_number }}
-Branch: $BRANCH_NAME
-Developer: ${{ github.actor }}
-Commit: $COMMIT_MSG
-Time: $BUILD_TIME
-Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-  https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}
-  
-  sleep 2
-  done
+      - name: Send failure notification
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+          
+          curl -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+               -d chat_id=${TELEGRAM_CHAT_ID} \
+               -d parse_mode=HTML \
+               -d text="❌ <b>Build Failed!</b>
+          
+          Build: #${{ github.run_number }}
+          Branch: ${BRANCH_NAME}
+          Developer: ${{ github.actor }}
+          Commit: ${COMMIT_MSG}
+          Time: ${BUILD_TIME}
+          
+          <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Log</a>"
 
-  - name: Send failure notification
-    if: failure()
-    env:
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-    run: |
-      COMMIT_MSG=$(git log -1 --pretty=%B)
-      BRANCH_NAME=${GITHUB_REF#refs/heads/}
-      BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
-      
-      curl -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
-      -d chat_id=${
+      - name: Build completed successfully
+        if: success()
+        run: |
+          echo "✅ APK Build completed successfully!"
+          echo "📦 Files ready in Artifacts and Telegram"
+          echo "🔢 Build Number: ${{ github.run_number }}"
