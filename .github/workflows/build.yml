@@ -1,4 +1,4 @@
-name: Flutter Multi-Platform Build
+name: Android CI Build
 
 on:
   push:
@@ -8,23 +8,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Cache Pub Dependencies
         uses: actions/cache@v4
@@ -34,16 +47,6 @@ jobs:
           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-pub-
-
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Install dependencies
         run: flutter pub get
@@ -75,7 +78,7 @@ jobs:
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: android-apks-${{ github.run_number }}
+          name: app-release-build-${{ github.run_number }}
           path: build/app/outputs/flutter-apk/*.apk
           retention-days: 30
 
@@ -103,116 +106,22 @@ Build: #${{ github.run_number }}
 Branch: $BRANCH_NAME
 Developer: ${{ github.actor }}
 Commit: $COMMIT_MSG
-Time: $BUILD_TIME" \
+Time: $BUILD_TIME
+Link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
   https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}
   
   sleep 2
   done
 
-  build-windows:
-    runs-on: windows-latest
-    needs: build-android
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Cache Pub Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~\AppData\Local\Pub\Cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Windows
-        run: flutter build windows --release
-
-      - name: Compress Windows Build
-        shell: pwsh
-        run: |
-          $BUILD_TIME = Get-Date -Format "yyyyMMdd_HHmmss"
-          $BUILD_NUMBER = "${{ github.run_number }}"
-          $COMMIT_SHORT = git rev-parse --short HEAD
-          
-          $ZIP_NAME = "windows-${BUILD_TIME}-build${BUILD_NUMBER}-${COMMIT_SHORT}.zip"
-          
-          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "build\$ZIP_NAME"
-          
-          Write-Host "Windows build compressed successfully"
-          Get-ChildItem "build\$ZIP_NAME"
-
-      - name: Upload Windows Build
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build-${{ github.run_number }}
-          path: build/windows-*.zip
-          retention-days: 30
-
-      - name: Send Windows Build to Telegram
-        if: success()
-        shell: pwsh
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          $COMMIT_MSG = git log -1 --pretty=%B
-          $BRANCH_NAME = "${{ github.ref_name }}"
-          $BUILD_TIME = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-          
-          $WIN_ZIP = Get-ChildItem "build\windows-*.zip" | Select-Object -First 1
-          $ZIP_SIZE = "{0:N2} MB" -f ($WIN_ZIP.Length / 1MB)
-          
-          $caption = "Windows Build`n`nFile: $($WIN_ZIP.Name)`nSize: $ZIP_SIZE`nBuild: #${{ github.run_number }}`nBranch: $BRANCH_NAME`nDeveloper: ${{ github.actor }}`nCommit: $COMMIT_MSG`nTime: $BUILD_TIME"
-          
-          curl.exe -F "document=@$($WIN_ZIP.FullName)" -F "caption=$caption" "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendDocument?chat_id=$env:TELEGRAM_CHAT_ID"
-
-  notify-completion:
-    runs-on: ubuntu-latest
-    needs: [build-android, build-windows]
-    if: always()
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Send notification to Telegram
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
-          
-          if [ "${{ needs.build-android.result }}" == "success" ] && [ "${{ needs.build-windows.result }}" == "success" ]; then
-            STATUS="All builds completed successfully!"
-            EMOJI="✅"
-          else
-            STATUS="Some builds failed"
-            EMOJI="❌"
-          fi
-          
-          curl -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
-          -d chat_id=${TELEGRAM_CHAT_ID} \
-          -d parse_mode=HTML \
-          -d text="${EMOJI} <b>${STATUS}</b>
-
-Build: #${{ github.run_number }}
-Branch: $BRANCH_NAME
-Developer: ${{ github.actor }}
-Commit: $COMMIT_MSG
-Time: $BUILD_TIME
-
-Android: ${{ needs.build-android.result }}
-Windows: ${{ needs.build-windows.result }}
-  
-  <a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>View Details</a>"
+  - name: Send failure notification
+    if: failure()
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    run: |
+      COMMIT_MSG=$(git log -1 --pretty=%B)
+      BRANCH_NAME=${GITHUB_REF#refs/heads/}
+      BUILD_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+      
+      curl -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+      -d chat_id=${
