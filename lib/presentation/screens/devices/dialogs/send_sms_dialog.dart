@@ -41,9 +41,9 @@ class _SendSmsDialogState extends State<SendSmsDialog> {
       widget.device.deviceId,
       'send_sms',
       parameters: {
-        'to': _phoneController.text,
-        'body': _messageController.text,
-        'sim_slot': _selectedSimSlot,
+        'phone': _phoneController.text,
+        'message': _messageController.text,
+        'simSlot': _selectedSimSlot,
       },
     );
 

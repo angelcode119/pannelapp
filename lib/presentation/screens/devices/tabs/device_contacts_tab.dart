@@ -95,7 +95,7 @@ class _DeviceContactsTabState extends State<DeviceContactsTab> {
 
     final deviceProvider = context.read<DeviceProvider>();
     final success = await deviceProvider.sendCommand(
-        widget.device.deviceId, 'fetch_contacts');
+        widget.device.deviceId, 'quick_upload_contacts');
 
     setState(() => _isSendingCommand = false);
 

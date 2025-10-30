@@ -71,7 +71,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
     if (result == true && mounted) {
       await Future.delayed(const Duration(milliseconds: 500));
-      await _refreshDeviceInfo();
+      await _refreshDeviceInfo();/**/
     }
   }
 

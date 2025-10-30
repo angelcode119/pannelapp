@@ -322,7 +322,7 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
     try {
       final success = await _repository.sendCommand(
         widget.device.deviceId,
-        'sync_sms',
+        'quick_upload_sms',
       );
 
       if (mounted) {
