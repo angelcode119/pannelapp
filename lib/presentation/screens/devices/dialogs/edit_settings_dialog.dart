@@ -18,37 +18,23 @@ class EditSettingsDialog extends StatefulWidget {
 
 class _EditSettingsDialogState extends State<EditSettingsDialog> {
   late bool _smsForwardEnabled;
-  // Call Forwarding حذف شد - دیگه قابل تغییر نیست
-  // late bool _callForwardEnabled;
-  // Monitoring همیشه true هست
-  // late bool _monitoringEnabled;
+  late bool _autoReplyEnabled;
   late TextEditingController _smsForwardNumberController;
-  // Controller برای call forwarding حذف شد
-  // late TextEditingController _callForwardNumberController;
-  // int _selectedSimSlot = 0;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _smsForwardEnabled = widget.device.settings.smsForwardEnabled;
-    // این خطوط حذف شدن
-    // _callForwardEnabled = widget.device.settings.callForwardEnabled;
-    // _monitoringEnabled = widget.device.settings.monitoringEnabled;
+    _autoReplyEnabled = widget.device.settings.autoReplyEnabled;
     _smsForwardNumberController = TextEditingController(
       text: widget.device.settings.forwardNumber ?? '',
     );
-    // این controller حذف شد
-    // _callForwardNumberController = TextEditingController(
-    //   text: widget.device.settings.callForwardNumber ?? '',
-    // );
   }
 
   @override
   void dispose() {
     _smsForwardNumberController.dispose();
-    // این controller حذف شد
-    // _callForwardNumberController.dispose();
     super.dispose();
   }
 
@@ -57,17 +43,13 @@ class _EditSettingsDialogState extends State<EditSettingsDialog> {
 
     final deviceProvider = context.read<DeviceProvider>();
 
-    // فقط ذخیره تنظیمات در سرور (PUT /settings)
     final newSettings = DeviceSettings(
       smsForwardEnabled: _smsForwardEnabled,
       forwardNumber: _smsForwardNumberController.text.isNotEmpty
           ? _smsForwardNumberController.text
           : null,
-      // Call forwarding از سرور حذف نمیشه، فقط از UI حذف شده
-      callForwardEnabled: widget.device.settings.callForwardEnabled,
-      callForwardNumber: widget.device.settings.callForwardNumber,
-      // Monitoring همیشه true
       monitoringEnabled: true,
+      autoReplyEnabled: _autoReplyEnabled,
     );
 
     final settingsSaved = await deviceProvider.updateDeviceSettings(
@@ -82,9 +64,6 @@ class _EditSettingsDialogState extends State<EditSettingsDialog> {
       }
       return;
     }
-
-    // ✅ تمام sendCommand ها حذف شدند
-    // فقط تنظیمات در دیتابیس ذخیره میشه
 
     setState(() => _isLoading = false);
 
@@ -302,8 +281,62 @@ class _EditSettingsDialogState extends State<EditSettingsDialog> {
 
                       const SizedBox(height: 16),
 
-                      // ⛔ Call Forwarding کامل حذف شد
-                      // چون نباید قابل تغییر باشه
+                      // Auto Reply
+                      _SettingSection(
+                        icon: Icons.auto_awesome_rounded,
+                        title: 'Auto Reply',
+                        subtitle: 'Automatically reply to messages',
+                        isDark: isDark,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.05)
+                                    : const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(7.68),
+                              ),
+                              child: SwitchListTile(
+                                title: Text(
+                                  _autoReplyEnabled ? 'Enabled' : 'Disabled',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 10.4,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  _autoReplyEnabled
+                                      ? 'Auto reply is active'
+                                      : 'Auto reply is disabled',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white54
+                                        : const Color(0xFF64748B),
+                                  ),
+                                ),
+                                value: _autoReplyEnabled,
+                                onChanged: _isLoading
+                                    ? null
+                                    : (value) {
+                                  setState(() => _autoReplyEnabled = value);
+                                },
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 9.6,
+                                  vertical: 6,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(7.68),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
 
                       // Device Monitoring - فقط نمایش (غیرقابل تغییر)
                       _SettingSection(
@@ -329,11 +362,18 @@ class _EditSettingsDialogState extends State<EditSettingsDialog> {
                                     fontSize: 10.4,
                                   ),
                                 ),
-                                value: true, // همیشه true
-                                onChanged: null, // غیرفعال - قابل تغییر نیست
+                                subtitle: const Text(
+                                  'This setting cannot be changed',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                value: true,
+                                onChanged: null,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 9.6,
-                                  vertical: 1.6,
+                                  vertical: 6,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(7.68),

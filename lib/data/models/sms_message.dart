@@ -32,12 +32,18 @@ class SmsMessage {
       from: json['from'],
       to: json['to'],
       body: json['body'] ?? '',
-      timestamp: DateTime.parse(json['timestamp']),
+      // ✅ تبدیل milliseconds به DateTime
+      timestamp: json['timestamp'] is int
+          ? DateTime.fromMillisecondsSinceEpoch(json['timestamp'])
+          : DateTime.parse(json['timestamp']),
       type: json['type'] ?? 'inbox',
       isRead: json['is_read'] ?? false,
       isFlagged: json['is_flagged'] ?? false,
-      tags: List<String>.from(json['tags'] ?? []),
-      receivedAt: DateTime.parse(json['received_at']),
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
+      // ✅ handle کردن received_at که ممکنه null باشه
+      receivedAt: json['received_at'] != null
+          ? DateTime.parse(json['received_at'])
+          : DateTime.now(),
     );
   }
 
@@ -48,7 +54,7 @@ class SmsMessage {
       'from': from,
       'to': to,
       'body': body,
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': timestamp.millisecondsSinceEpoch, // ✅ به عدد تبدیل می‌کنیم
       'type': type,
       'is_read': isRead,
       'is_flagged': isFlagged,

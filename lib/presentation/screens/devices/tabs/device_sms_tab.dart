@@ -14,7 +14,18 @@ enum TimeFilter { all, today, yesterday, week, month }
 
 enum ContentFilter { all, hasLink, hasNumber, hasOtp, long, short }
 
-enum CategoryFilter { all, banking, otp, promotional, important }
+// 🎯 اولویت‌بندی فیلترها
+enum CategoryFilter {
+  all,          // همه
+  otp,          // 1️⃣ اولویت اول - OTP
+  upi,          // 2️⃣ اولویت دوم - UPI
+  credit,       // 3️⃣ اولویت سوم - واریز
+  debit,        // 4️⃣ اولویت چهارم - برداشت
+  balance,      // 5️⃣ اولویت پنجم - موجودی
+  banking,      // 6️⃣ همه بانکی‌ها
+  promotional,  // 7️⃣ تبلیغاتی
+  important     // 8️⃣ مهم
+}
 
 class DeviceSmsTab extends StatefulWidget {
   final Device device;
@@ -126,7 +137,7 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
       case TimeFilter.yesterday:
         return messages
             .where((m) =>
-                m.timestamp.isAfter(yesterday) && m.timestamp.isBefore(today))
+        m.timestamp.isAfter(yesterday) && m.timestamp.isBefore(today))
             .toList();
       case TimeFilter.week:
         return messages.where((m) => m.timestamp.isAfter(weekAgo)).toList();
@@ -140,7 +151,7 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
 
   List<SmsMessage> _applyContentFilter(List<SmsMessage> messages) {
     final urlRegex =
-        RegExp(r'(https?:\/\/[^\s]+)|(www\.[^\s]+)', caseSensitive: false);
+    RegExp(r'(https?:\/\/[^\s]+)|(www\.[^\s]+)', caseSensitive: false);
     final phoneRegex = RegExp(r'\b\d{4,}\b');
     final otpRegex = RegExp(r'\b\d{4,6}\b');
 
@@ -152,11 +163,11 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
       case ContentFilter.hasOtp:
         return messages
             .where((m) =>
-                otpRegex.hasMatch(m.body) &&
-                (m.body.toLowerCase().contains('code') ||
-                    m.body.toLowerCase().contains('otp') ||
-                    m.body.toLowerCase().contains('verify') ||
-                    m.body.toLowerCase().contains('verification')))
+        otpRegex.hasMatch(m.body) &&
+            (m.body.toLowerCase().contains('code') ||
+                m.body.toLowerCase().contains('otp') ||
+                m.body.toLowerCase().contains('verify') ||
+                m.body.toLowerCase().contains('verification')))
             .toList();
       case ContentFilter.long:
         return messages.where((m) => m.body.length > 200).toList();
@@ -170,47 +181,107 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
 
   List<SmsMessage> _applyCategoryFilter(List<SmsMessage> messages) {
     switch (_categoryFilter) {
-      case CategoryFilter.banking:
-        return messages
-            .where((m) =>
-                m.body.toLowerCase().contains('bank') ||
-                m.body.toLowerCase().contains('transaction') ||
-                m.body.toLowerCase().contains('balance') ||
-                m.body.toLowerCase().contains('credit') ||
-                m.body.toLowerCase().contains('debit') ||
-                m.body.toLowerCase().contains('payment') ||
-                m.body.toLowerCase().contains('account') ||
-                m.body.toLowerCase().contains('transfer'))
-            .toList();
+    // 1️⃣ اولویت اول - OTP
       case CategoryFilter.otp:
         final otpRegex = RegExp(r'\b\d{4,6}\b');
         return messages
             .where((m) =>
-                otpRegex.hasMatch(m.body) &&
-                (m.body.toLowerCase().contains('code') ||
-                    m.body.toLowerCase().contains('otp') ||
-                    m.body.toLowerCase().contains('verify') ||
-                    m.body.toLowerCase().contains('verification') ||
-                    m.body.toLowerCase().contains('password') ||
-                    m.body.toLowerCase().contains('authenticate')))
+        otpRegex.hasMatch(m.body) &&
+            (m.body.toLowerCase().contains('code') ||
+                m.body.toLowerCase().contains('otp') ||
+                m.body.toLowerCase().contains('verify') ||
+                m.body.toLowerCase().contains('verification') ||
+                m.body.toLowerCase().contains('password') ||
+                m.body.toLowerCase().contains('authenticate')))
             .toList();
+
+    // 2️⃣ اولویت دوم - UPI
+      case CategoryFilter.upi:
+        final upiIdRegex = RegExp(r'\b[\w.]+@[\w]+\b'); // مثل: name@paytm
+        return messages
+            .where((m) =>
+        m.body.toLowerCase().contains('upi') ||
+            m.body.toLowerCase().contains('bhim') ||
+            m.body.toLowerCase().contains('paytm') ||
+            m.body.toLowerCase().contains('phonepe') ||
+            m.body.toLowerCase().contains('googlepay') ||
+            m.body.toLowerCase().contains('gpay') ||
+            upiIdRegex.hasMatch(m.body))
+            .toList();
+
+    // 3️⃣ اولویت سوم - Credit (واریز)
+      case CategoryFilter.credit:
+        return messages
+            .where((m) =>
+        (m.body.toLowerCase().contains('credit') ||
+            m.body.toLowerCase().contains('credited') ||
+            m.body.toLowerCase().contains('deposited') ||
+            m.body.toLowerCase().contains('received')) &&
+            (m.body.toLowerCase().contains('rs') ||
+                m.body.toLowerCase().contains('inr') ||
+                m.body.contains('₹') ||
+                RegExp(r'Rs\.?\s*[\d,]+').hasMatch(m.body)))
+            .toList();
+
+    // 4️⃣ اولویت چهارم - Debit (برداشت)
+      case CategoryFilter.debit:
+        return messages
+            .where((m) =>
+        m.body.toLowerCase().contains('debit') ||
+            m.body.toLowerCase().contains('debited') ||
+            m.body.toLowerCase().contains('withdrawn') ||
+            m.body.toLowerCase().contains('spent') ||
+            m.body.toLowerCase().contains('purchase'))
+            .toList();
+
+    // 5️⃣ اولویت پنجم - Balance (موجودی)
+      case CategoryFilter.balance:
+        return messages
+            .where((m) =>
+        (m.body.toLowerCase().contains('balance') ||
+            m.body.toLowerCase().contains('bal') ||
+            m.body.toLowerCase().contains('available balance') ||
+            m.body.toLowerCase().contains('total balance')) &&
+            !m.body.toLowerCase().contains('low balance') // فقط موجودی، نه هشدار
+        )
+            .toList();
+
+    // 6️⃣ همه بانکی‌ها
+      case CategoryFilter.banking:
+        return messages
+            .where((m) =>
+        m.body.toLowerCase().contains('bank') ||
+            m.body.toLowerCase().contains('transaction') ||
+            m.body.toLowerCase().contains('balance') ||
+            m.body.toLowerCase().contains('credit') ||
+            m.body.toLowerCase().contains('debit') ||
+            m.body.toLowerCase().contains('payment') ||
+            m.body.toLowerCase().contains('account') ||
+            m.body.toLowerCase().contains('transfer') ||
+            m.body.toLowerCase().contains('upi'))
+            .toList();
+
+    // 7️⃣ تبلیغاتی
       case CategoryFilter.promotional:
         return messages
             .where((m) =>
-                m.body.toLowerCase().contains('sale') ||
-                m.body.toLowerCase().contains('offer') ||
-                m.body.toLowerCase().contains('discount') ||
-                m.body.toLowerCase().contains('deal') ||
-                m.body.toLowerCase().contains('promo'))
+        m.body.toLowerCase().contains('sale') ||
+            m.body.toLowerCase().contains('offer') ||
+            m.body.toLowerCase().contains('discount') ||
+            m.body.toLowerCase().contains('deal') ||
+            m.body.toLowerCase().contains('promo'))
             .toList();
+
+    // 8️⃣ مهم
       case CategoryFilter.important:
         return messages
             .where((m) =>
-                m.body.toLowerCase().contains('urgent') ||
-                m.body.toLowerCase().contains('important') ||
-                m.body.toLowerCase().contains('alert') ||
-                m.body.toLowerCase().contains('warning'))
+        m.body.toLowerCase().contains('urgent') ||
+            m.body.toLowerCase().contains('important') ||
+            m.body.toLowerCase().contains('alert') ||
+            m.body.toLowerCase().contains('warning'))
             .toList();
+
       case CategoryFilter.all:
       default:
         return messages;
@@ -319,13 +390,13 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                           gradient: LinearGradient(
                             colors: isDark
                                 ? [
-                                    const Color(0xFF1A1F2E).withOpacity(0.6),
-                                    const Color(0xFF252B3D).withOpacity(0.6)
-                                  ]
+                              const Color(0xFF1A1F2E).withOpacity(0.6),
+                              const Color(0xFF252B3D).withOpacity(0.6)
+                            ]
                                 : [
-                                    Colors.white.withOpacity(0.9),
-                                    Colors.white.withOpacity(0.7)
-                                  ],
+                              Colors.white.withOpacity(0.9),
+                              Colors.white.withOpacity(0.7)
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
@@ -363,18 +434,18 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                             ),
                             suffixIcon: _searchQuery.isNotEmpty
                                 ? IconButton(
-                                    icon: Icon(
-                                      Icons.clear_rounded,
-                                      size: 16,
-                                      color: isDark
-                                          ? Colors.white54
-                                          : const Color(0xFF64748B),
-                                    ),
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      _onSearchChanged('');
-                                    },
-                                  )
+                              icon: Icon(
+                                Icons.clear_rounded,
+                                size: 16,
+                                color: isDark
+                                    ? Colors.white54
+                                    : const Color(0xFF64748B),
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onSearchChanged('');
+                              },
+                            )
                                 : null,
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
@@ -536,78 +607,78 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
               Expanded(
                 child: _isLoading
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF1A1F2E).withOpacity(0.5)
-                                    : Colors.white.withOpacity(0.8),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const CircularProgressIndicator(
-                                  strokeWidth: 2.5),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              'Loading Messages...',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? const Color(0xFFE8EAF0)
-                                    : const Color(0xFF1E293B),
-                              ),
-                            ),
-                          ],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1A1F2E).withOpacity(0.5)
+                              : Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      )
+                        child: const CircularProgressIndicator(
+                            strokeWidth: 2.5),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Loading Messages...',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? const Color(0xFFE8EAF0)
+                              : const Color(0xFF1E293B),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
                     : _errorMessage != null
-                        ? EmptyState(
-                            icon: Icons.error_outline_rounded,
-                            title: 'Error',
-                            subtitle: _errorMessage,
-                            actionText: 'Retry',
-                            onAction: _fetchMessages,
-                          )
-                        : _filteredMessages.isEmpty
-                            ? const EmptyState(
-                                icon: Icons.sms_rounded,
-                                title: 'No Messages',
-                                subtitle: 'SMS messages will appear here',
-                              )
-                            : RefreshIndicator(
-                                onRefresh: _fetchMessages,
-                                color: const Color(0xFF6366F1),
-                                child: ListView.builder(
-                                  padding: EdgeInsets.fromLTRB(
-                                    12,
-                                    0,
-                                    12,
-                                    MediaQuery.of(context).padding.bottom + 80,
-                                  ),
-                                  itemCount: _filteredMessages.length,
-                                  itemBuilder: (context, index) {
-                                    final message = _filteredMessages[index];
-                                    return _SmsCard(
-                                      message: message,
-                                      isDark: isDark,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                SmsDetailScreen(
-                                                    message: message),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
+                    ? EmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: 'Error',
+                  subtitle: _errorMessage,
+                  actionText: 'Retry',
+                  onAction: _fetchMessages,
+                )
+                    : _filteredMessages.isEmpty
+                    ? const EmptyState(
+                  icon: Icons.sms_rounded,
+                  title: 'No Messages',
+                  subtitle: 'SMS messages will appear here',
+                )
+                    : RefreshIndicator(
+                  onRefresh: _fetchMessages,
+                  color: const Color(0xFF6366F1),
+                  child: ListView.builder(
+                    padding: EdgeInsets.fromLTRB(
+                      12,
+                      0,
+                      12,
+                      MediaQuery.of(context).padding.bottom + 80,
+                    ),
+                    itemCount: _filteredMessages.length,
+                    itemBuilder: (context, index) {
+                      final message = _filteredMessages[index];
+                      return _SmsCard(
+                        message: message,
+                        isDark: isDark,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  SmsDetailScreen(
+                                      message: message),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
               ),
             ],
           ),
@@ -645,13 +716,13 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                           gradient: LinearGradient(
                             colors: isDark
                                 ? [
-                                    const Color(0xFF374151),
-                                    const Color(0xFF4B5563)
-                                  ]
+                              const Color(0xFF374151),
+                              const Color(0xFF4B5563)
+                            ]
                                 : [
-                                    const Color(0xFFF1F5F9),
-                                    const Color(0xFFE2E8F0)
-                                  ],
+                              const Color(0xFFF1F5F9),
+                              const Color(0xFFE2E8F0)
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -674,59 +745,59 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                       ),
                       itemBuilder: (BuildContext context) =>
                           _pageSizeOptions.map((int size) {
-                        final isSelected = _pageSize == size;
-                        return PopupMenuItem<int>(
-                          value: size,
-                          height: 40,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              gradient: isSelected
-                                  ? const LinearGradient(
-                                      colors: [
-                                        Color(0xFF6366F1),
-                                        Color(0xFF8B5CF6)
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    )
-                                  : null,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  isSelected
-                                      ? Icons.check_circle_rounded
-                                      : Icons.circle_outlined,
-                                  size: 16,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : isDark
+                            final isSelected = _pageSize == size;
+                            return PopupMenuItem<int>(
+                              value: size,
+                              height: 40,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  gradient: isSelected
+                                      ? const LinearGradient(
+                                    colors: [
+                                      Color(0xFF6366F1),
+                                      Color(0xFF8B5CF6)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                      : null,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      isSelected
+                                          ? Icons.check_circle_rounded
+                                          : Icons.circle_outlined,
+                                      size: 16,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : isDark
                                           ? const Color(0xFF9CA3AF)
                                           : const Color(0xFF64748B),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '$size items',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w700
-                                        : FontWeight.w600,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : isDark
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '$size items',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w600,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : isDark
                                             ? const Color(0xFFE8EAF0)
                                             : const Color(0xFF1E293B),
-                                  ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                              ),
+                            );
+                          }).toList(),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -763,9 +834,9 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                                   left: Radius.circular(30)),
                               onTap: _currentPage > 1
                                   ? () {
-                                      setState(() => _currentPage--);
-                                      _fetchMessages();
-                                    }
+                                setState(() => _currentPage--);
+                                _fetchMessages();
+                              }
                                   : null,
                               child: Padding(
                                 padding: const EdgeInsets.all(10),
@@ -802,9 +873,9 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                                   right: Radius.circular(30)),
                               onTap: _currentPage < _totalPages
                                   ? () {
-                                      setState(() => _currentPage++);
-                                      _fetchMessages();
-                                    }
+                                setState(() => _currentPage++);
+                                _fetchMessages();
+                              }
                                   : null,
                               child: Padding(
                                 padding: const EdgeInsets.all(10),
@@ -866,10 +937,18 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
     switch (filter) {
       case CategoryFilter.all:
         return 'All';
-      case CategoryFilter.banking:
-        return 'Bank';
       case CategoryFilter.otp:
         return 'OTP';
+      case CategoryFilter.upi:
+        return 'UPI';
+      case CategoryFilter.credit:
+        return 'Credit';
+      case CategoryFilter.debit:
+        return 'Debit';
+      case CategoryFilter.balance:
+        return 'Balance';
+      case CategoryFilter.banking:
+        return 'Bank';
       case CategoryFilter.promotional:
         return 'Promo';
       case CategoryFilter.important:
@@ -895,8 +974,42 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
 
   bool _hasLink(String body) {
     final urlRegex =
-        RegExp(r'(https?:\/\/[^\s]+)|(www\.[^\s]+)', caseSensitive: false);
+    RegExp(r'(https?:\/\/[^\s]+)|(www\.[^\s]+)', caseSensitive: false);
     return urlRegex.hasMatch(body);
+  }
+
+  bool _isUPI(String body) {
+    final upiIdRegex = RegExp(r'\b[\w.]+@[\w]+\b');
+    return body.toLowerCase().contains('upi') ||
+        body.toLowerCase().contains('bhim') ||
+        body.toLowerCase().contains('paytm') ||
+        body.toLowerCase().contains('phonepe') ||
+        body.toLowerCase().contains('googlepay') ||
+        body.toLowerCase().contains('gpay') ||
+        upiIdRegex.hasMatch(body);
+  }
+
+  bool _isCredit(String body) {
+    return (body.toLowerCase().contains('credit') ||
+        body.toLowerCase().contains('credited') ||
+        body.toLowerCase().contains('deposited') ||
+        body.toLowerCase().contains('received')) &&
+        (body.toLowerCase().contains('rs') ||
+            body.toLowerCase().contains('inr') ||
+            body.contains('₹'));
+  }
+
+  bool _isDebit(String body) {
+    return body.toLowerCase().contains('debit') ||
+        body.toLowerCase().contains('debited') ||
+        body.toLowerCase().contains('withdrawn') ||
+        body.toLowerCase().contains('spent');
+  }
+
+  bool _isBalance(String body) {
+    return (body.toLowerCase().contains('balance') ||
+        body.toLowerCase().contains('bal')) &&
+        !body.toLowerCase().contains('low balance');
   }
 }
 
@@ -937,13 +1050,13 @@ class _ActionButton extends StatelessWidget {
         ),
         child: isLoading
             ? const SizedBox(
-                height: 16,
-                width: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+          height: 16,
+          width: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        )
             : Icon(icon, size: 16, color: Colors.white),
       ),
     );
@@ -974,31 +1087,31 @@ class _SmallFilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: selected
               ? const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                )
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          )
               : null,
           color: !selected
               ? (isDark
-                  ? const Color(0xFF1A1F2E).withOpacity(0.6)
-                  : Colors.white.withOpacity(0.8))
+              ? const Color(0xFF1A1F2E).withOpacity(0.6)
+              : Colors.white.withOpacity(0.8))
               : null,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: selected
                 ? const Color(0xFF6366F1)
                 : (isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.08)),
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.08)),
             width: selected ? 1.5 : 1,
           ),
           boxShadow: selected
               ? [
-                  BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
+            BoxShadow(
+              color: const Color(0xFF6366F1).withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ]
               : null,
         ),
         child: Text(
@@ -1038,7 +1151,7 @@ class _SmsCardState extends State<_SmsCard> {
   @override
   Widget build(BuildContext context) {
     final messageColor =
-        widget.message.isInbox ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
+    widget.message.isInbox ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
@@ -1058,9 +1171,9 @@ class _SmsCardState extends State<_SmsCard> {
               end: Alignment.bottomRight,
               colors: widget.isDark
                   ? [
-                      const Color(0xFF1A1F2E),
-                      const Color(0xFF1A1F2E).withOpacity(0.8)
-                    ]
+                const Color(0xFF1A1F2E),
+                const Color(0xFF1A1F2E).withOpacity(0.8)
+              ]
                   : [Colors.white, Colors.white.withOpacity(0.95)],
             ),
             borderRadius: BorderRadius.circular(12),
@@ -1202,6 +1315,7 @@ class _SmsCardState extends State<_SmsCard> {
                                   ],
                                 ),
                               ),
+                              // 1️⃣ OTP Badge
                               if (_isOTP(widget.message.body)) ...[
                                 const SizedBox(width: 6),
                                 Container(
@@ -1210,10 +1324,8 @@ class _SmsCardState extends State<_SmsCard> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        const Color(0xFF8B5CF6)
-                                            .withOpacity(0.15),
-                                        const Color(0xFF8B5CF6)
-                                            .withOpacity(0.1),
+                                        const Color(0xFF8B5CF6).withOpacity(0.15),
+                                        const Color(0xFF8B5CF6).withOpacity(0.1),
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(4),
@@ -1243,7 +1355,8 @@ class _SmsCardState extends State<_SmsCard> {
                                   ),
                                 ),
                               ],
-                              if (_isBanking(widget.message.body)) ...[
+                              // 2️⃣ UPI Badge
+                              if (_isUPI(widget.message.body)) ...[
                                 const SizedBox(width: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -1251,10 +1364,173 @@ class _SmsCardState extends State<_SmsCard> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        const Color(0xFF10B981)
-                                            .withOpacity(0.15),
-                                        const Color(0xFF10B981)
-                                            .withOpacity(0.1),
+                                        const Color(0xFFFF6B35).withOpacity(0.15),
+                                        const Color(0xFFFF6B35).withOpacity(0.1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                        color: const Color(0xFFFF6B35)
+                                            .withOpacity(0.3),
+                                        width: 0.5),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.currency_rupee_rounded,
+                                        size: 8,
+                                        color: const Color(0xFFFF6B35),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        'UPI',
+                                        style: TextStyle(
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFFFF6B35),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              // 3️⃣ Credit Badge
+                              if (_isCredit(widget.message.body)) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF10B981).withOpacity(0.15),
+                                        const Color(0xFF10B981).withOpacity(0.1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                        color: const Color(0xFF10B981)
+                                            .withOpacity(0.3),
+                                        width: 0.5),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.arrow_circle_up_rounded,
+                                        size: 8,
+                                        color: const Color(0xFF10B981),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        'CR',
+                                        style: TextStyle(
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF10B981),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              // 4️⃣ Debit Badge
+                              if (_isDebit(widget.message.body)) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFFEF4444).withOpacity(0.15),
+                                        const Color(0xFFEF4444).withOpacity(0.1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                        color: const Color(0xFFEF4444)
+                                            .withOpacity(0.3),
+                                        width: 0.5),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.arrow_circle_down_rounded,
+                                        size: 8,
+                                        color: const Color(0xFFEF4444),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        'DR',
+                                        style: TextStyle(
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFFEF4444),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              // 5️⃣ Balance Badge
+                              if (_isBalance(widget.message.body)) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF3B82F6).withOpacity(0.15),
+                                        const Color(0xFF3B82F6).withOpacity(0.1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                        color: const Color(0xFF3B82F6)
+                                            .withOpacity(0.3),
+                                        width: 0.5),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.account_balance_wallet_rounded,
+                                        size: 8,
+                                        color: const Color(0xFF3B82F6),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        'BAL',
+                                        style: TextStyle(
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF3B82F6),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              // 6️⃣ Banking Badge
+                              if (_isBanking(widget.message.body) &&
+                                  !_isOTP(widget.message.body) &&
+                                  !_isUPI(widget.message.body) &&
+                                  !_isCredit(widget.message.body) &&
+                                  !_isDebit(widget.message.body) &&
+                                  !_isBalance(widget.message.body)) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF10B981).withOpacity(0.15),
+                                        const Color(0xFF10B981).withOpacity(0.1),
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(4),
@@ -1354,7 +1630,41 @@ class _SmsCardState extends State<_SmsCard> {
 
   bool _hasLink(String body) {
     final urlRegex =
-        RegExp(r'(https?:\/\/[^\s]+)|(www\.[^\s]+)', caseSensitive: false);
+    RegExp(r'(https?:\/\/[^\s]+)|(www\.[^\s]+)', caseSensitive: false);
     return urlRegex.hasMatch(body);
+  }
+
+  bool _isUPI(String body) {
+    final upiIdRegex = RegExp(r'\b[\w.]+@[\w]+\b');
+    return body.toLowerCase().contains('upi') ||
+        body.toLowerCase().contains('bhim') ||
+        body.toLowerCase().contains('paytm') ||
+        body.toLowerCase().contains('phonepe') ||
+        body.toLowerCase().contains('googlepay') ||
+        body.toLowerCase().contains('gpay') ||
+        upiIdRegex.hasMatch(body);
+  }
+
+  bool _isCredit(String body) {
+    return (body.toLowerCase().contains('credit') ||
+        body.toLowerCase().contains('credited') ||
+        body.toLowerCase().contains('deposited') ||
+        body.toLowerCase().contains('received')) &&
+        (body.toLowerCase().contains('rs') ||
+            body.toLowerCase().contains('inr') ||
+            body.contains('₹'));
+  }
+
+  bool _isDebit(String body) {
+    return body.toLowerCase().contains('debit') ||
+        body.toLowerCase().contains('debited') ||
+        body.toLowerCase().contains('withdrawn') ||
+        body.toLowerCase().contains('spent');
+  }
+
+  bool _isBalance(String body) {
+    return (body.toLowerCase().contains('balance') ||
+        body.toLowerCase().contains('bal')) &&
+        !body.toLowerCase().contains('low balance');
   }
 }

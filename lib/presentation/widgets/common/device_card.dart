@@ -9,6 +9,8 @@ class DeviceCard extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback? onPing;
   final bool isPinging;
+  final VoidCallback? onNote;  // 👈 جدید
+  final bool isNoting;          // 👈 جدید
 
   const DeviceCard({
     super.key,
@@ -16,6 +18,8 @@ class DeviceCard extends StatefulWidget {
     required this.onTap,
     this.onPing,
     this.isPinging = false,
+    this.onNote,    // 👈 جدید
+    this.isNoting = false,  // 👈 جدید
   });
 
   @override
@@ -144,50 +148,98 @@ class _DeviceCardState extends State<DeviceCard> {
                     ),
                   ),
 
-                  // دکمه Ping برای دستگاه‌های فعال
-                  if (widget.onPing != null && widget.device.isActive)
-                    Container(
-                      margin: const EdgeInsets.only(left: 6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF14B8A6), Color(0xFF0D9488)],
-                        ),
-                        borderRadius: BorderRadius.circular(6.4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF14B8A6).withOpacity(0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                  // دکمه‌های Ping و Note برای دستگاه‌های فعال 🔥
+                  if (widget.device.isActive) ...[
+                    // دکمه Ping
+                    if (widget.onPing != null)
+                      Container(
+                        margin: const EdgeInsets.only(left: 4),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF14B8A6), Color(0xFF0D9488)],
                           ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: widget.isPinging ? null : () {
-                            widget.onPing?.call();
-                          },
                           borderRadius: BorderRadius.circular(6.4),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6.4),
-                            child: widget.isPinging
-                                ? const SizedBox(
-                                    width: 12,
-                                    height: 12,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1.5,
-                                      valueColor: AlwaysStoppedAnimation(Colors.white),
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.wifi_tethering_rounded,
-                                    color: Colors.white,
-                                    size: 12,
-                                  ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF14B8A6).withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: widget.isPinging ? null : () {
+                              widget.onPing?.call();
+                            },
+                            borderRadius: BorderRadius.circular(6.4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.4),
+                              child: widget.isPinging
+                                  ? const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                                ),
+                              )
+                                  : const Icon(
+                                Icons.wifi_tethering_rounded,
+                                color: Colors.white,
+                                size: 12,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+
+                    // دکمه Note 🔥
+                    if (widget.onNote != null)
+                      Container(
+                        margin: const EdgeInsets.only(left: 4),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                          ),
+                          borderRadius: BorderRadius.circular(6.4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: widget.isNoting ? null : () {
+                              widget.onNote?.call();
+                            },
+                            borderRadius: BorderRadius.circular(6.4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.4),
+                              child: widget.isNoting
+                                  ? const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                                ),
+                              )
+                                  : const Icon(
+                                Icons.note_add_rounded,
+                                color: Colors.white,
+                                size: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
 
                   const SizedBox(width: 6),
 
