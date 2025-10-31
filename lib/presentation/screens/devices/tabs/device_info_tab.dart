@@ -5,6 +5,7 @@ import '../../../../data/models/device.dart';
 import '../../../../data/repositories/device_repository.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../dialogs/edit_settings_dialog.dart';
+import '../dialogs/add_note_dialog.dart';
 import '../../../providers/device_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -71,7 +72,19 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
     if (result == true && mounted) {
       await Future.delayed(const Duration(milliseconds: 500));
-      await _refreshDeviceInfo();/**/
+      await _refreshDeviceInfo();
+    }
+  }
+
+  Future<void> _handleEditNote() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => AddNoteDialog(device: _currentDevice),
+    );
+
+    if (result == true && mounted) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      await _refreshDeviceInfo();
     }
   }
 
@@ -184,6 +197,22 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
             ),
 
             const SizedBox(height: 16),
+
+            // 📝 Note Card
+            if (_currentDevice.hasNote) ...[
+              _NoteCard(
+                device: _currentDevice,
+                isDark: isDark,
+                onEdit: _handleEditNote,
+              ),
+              const SizedBox(height: 12),
+            ] else ...[
+              _AddNoteButton(
+                isDark: isDark,
+                onTap: _handleEditNote,
+              ),
+              const SizedBox(height: 12),
+            ],
 
             _ModernCard(
               isDark: isDark,
