@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../../core/constants/api_constants.dart';
 import 'storage_service.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();

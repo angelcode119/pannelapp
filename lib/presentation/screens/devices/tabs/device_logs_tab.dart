@@ -4,7 +4,6 @@ import '../../../../data/models/device_log.dart';
 import '../../../../data/repositories/device_repository.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../../../widgets/common/empty_state.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum LogFilter { all, system, sms, contacts, error }
 

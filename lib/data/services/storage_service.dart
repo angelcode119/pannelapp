@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class StorageService {
   static final StorageService _instance = StorageService._internal();
@@ -41,6 +40,18 @@ class StorageService {
 
   Future<void> deleteAdminInfo() async {
     await _secureStorage.delete(key: 'admin_info');
+  }
+
+  Future<void> saveUsername(String username) async {
+    await _secureStorage.write(key: 'username', value: username);
+  }
+
+  Future<String?> getUsername() async {
+    return await _secureStorage.read(key: 'username');
+  }
+
+  Future<void> deleteUsername() async {
+    await _secureStorage.delete(key: 'username');
   }
 
   Future<void> setThemeMode(String mode) async {

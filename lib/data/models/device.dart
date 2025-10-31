@@ -302,7 +302,11 @@ class Device {
   final int? callForwardingSimSlot;
   final DateTime? callForwardingUpdatedAt;
 
-  // 👇 فیلدهای جدید برای Note
+  // 🔑 Multi-Admin Support
+  final String? adminUsername;  // Admin که این دستگاه رو ثبت کرده
+  final String? adminToken;     // توکنی که برای ثبت استفاده شده
+
+  // 📝 فیلدهای جدید برای Note
   final String? notePriority;    // 'lowbalance', 'highbalance', 'none', یا null
   final String? noteMessage;     // متن نوت
   final DateTime? noteCreatedAt; // زمان ایجاد نوت (اختیاری)
@@ -360,9 +364,11 @@ class Device {
     this.callForwardingNumber,
     this.callForwardingSimSlot,
     this.callForwardingUpdatedAt,
-    this.notePriority,      // 👈 جدید
-    this.noteMessage,       // 👈 جدید
-    this.noteCreatedAt,     // 👈 جدید
+    this.adminUsername,     // 🔑 جدید
+    this.adminToken,        // 🔑 جدید
+    this.notePriority,      // 📝 جدید
+    this.noteMessage,       // 📝 جدید
+    this.noteCreatedAt,     // 📝 جدید
   });
 
   factory Device.fromJson(Map<String, dynamic> json) {
@@ -437,7 +443,10 @@ class Device {
       callForwardingUpdatedAt: json['call_forwarding_updated_at'] != null
           ? DateTime.parse(json['call_forwarding_updated_at'])
           : null,
-      // 👇 فیلدهای جدید Note
+      // 🔑 Multi-Admin Support
+      adminUsername: json['admin_username'],
+      adminToken: json['admin_token'],
+      // 📝 فیلدهای جدید Note
       notePriority: json['note_priority'],
       noteMessage: json['note_message'],
       noteCreatedAt: json['note_created_at'] != null
@@ -509,7 +518,10 @@ class Device {
       if (callForwardingUpdatedAt != null)
         'call_forwarding_updated_at':
         callForwardingUpdatedAt!.toIso8601String(),
-      // 👇 فیلدهای جدید Note
+      // 🔑 Multi-Admin Support
+      if (adminUsername != null) 'admin_username': adminUsername,
+      if (adminToken != null) 'admin_token': adminToken,
+      // 📝 فیلدهای جدید Note
       if (notePriority != null) 'note_priority': notePriority,
       if (noteMessage != null) 'note_message': noteMessage,
       if (noteCreatedAt != null)

@@ -5,7 +5,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../auth/login_screen.dart';
 import 'change_password_dialog.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/utils/date_utils.dart' as utils;
 
 class ProfileScreen extends StatefulWidget {
@@ -46,12 +45,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
       final adminProvider = context.read<AdminProvider>();
-      if (authProvider.currentAdmin != null) {
+      if (authProvider.admin != null) {
         adminProvider.fetchActivityStats(
-          adminUsername: authProvider.currentAdmin!.username,
+          adminUsername: authProvider.admin!.username,
         );
         adminProvider.fetchActivities(
-          adminUsername: authProvider.currentAdmin!.username,
+          adminUsername: authProvider.admin!.username,
         );
       }
     });
@@ -68,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final adminProvider = context.watch<AdminProvider>();
-    final admin = authProvider.currentAdmin;
+    final admin = authProvider.admin;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (admin == null) {
@@ -495,10 +494,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             ),
             ElevatedButton(
               onPressed: () async {
-                // بستن دیالوگ
+                // ???? ??????
                 Navigator.pop(dialogContext);
 
-                // نمایش loading
+                // ????? loading
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -511,12 +510,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   // logout
                   await authProvider.logout();
 
-                  // بستن loading
+                  // ???? loading
                   if (context.mounted) {
                     Navigator.pop(context);
                   }
 
-                  // رفتن به صفحه لاگین
+                  // ???? ?? ???? ?????
                   if (context.mounted) {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),

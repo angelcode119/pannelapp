@@ -11,7 +11,8 @@ import '../devices/device_detail_screen.dart';
 import '../devices/pending_device_screen.dart';
 import '../profile/profile_screen.dart';
 import '../settings/settings_screen.dart';
-import '../admins/admin_management_screen.dart';
+import '../admins/admin_list_screen.dart';
+import '../admins/admin_activities_screen.dart';
 import '../../widgets/dialogs/note_dialog.dart';
 
 class MainScreen extends StatefulWidget {
@@ -53,14 +54,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final admin = authProvider.currentAdmin;
+    final admin = authProvider.admin;
     final isWide = MediaQuery.of(context).size.width > 768;
 
     final List<Widget> pages = [
       _DevicesPage(),
       const ProfileScreen(),
       const SettingsScreen(),
-      if (admin?.isSuperAdmin == true) const AdminManagementScreen(),
+      if (admin?.isSuperAdmin == true) const AdminListScreen(),
+      if (admin?.isSuperAdmin == true) const AdminActivitiesScreen(),
     ];
 
     return Scaffold(
@@ -195,10 +197,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   const SizedBox(height: 6),
                   _NavItem(
                     icon: Icons.shield_rounded,
-                    label: 'Management',
+                    label: 'Admins',
                     index: 3,
                     selectedIndex: _selectedIndex,
                     onTap: () => setState(() => _selectedIndex = 3),
+                  ),
+                  const SizedBox(height: 6),
+                  _NavItem(
+                    icon: Icons.history_rounded,
+                    label: 'Activities',
+                    index: 4,
+                    selectedIndex: _selectedIndex,
+                    onTap: () => setState(() => _selectedIndex = 4),
                   ),
                 ],
               ],
@@ -289,12 +299,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               activeIcon: Icon(Icons.settings_rounded),
               label: 'Settings',
             ),
-            if (admin?.isSuperAdmin == true)
+            if (admin?.isSuperAdmin == true) ...[
               const BottomNavigationBarItem(
                 icon: Icon(Icons.shield_outlined),
                 activeIcon: Icon(Icons.shield_rounded),
-                label: 'Admin',
+                label: 'Admins',
               ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.history_outlined),
+                activeIcon: Icon(Icons.history_rounded),
+                label: 'Logs',
+              ),
+            ],
           ],
         ),
       ),
@@ -418,7 +434,7 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// 🔥 صفحه اصلی دستگاه‌ها
+// ?? ???? ???? ?????????
 class _DevicesPage extends StatefulWidget {
   @override
   State<_DevicesPage> createState() => _DevicesPageState();
@@ -487,7 +503,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   Future<void> _handleNoteDevice(String deviceId) async {
     final deviceProvider = context.read<DeviceProvider>();
 
-    // پیدا کردن دستگاه فعلی
+    // ???? ???? ?????? ????
     final device = deviceProvider.devices.firstWhere((d) => d.deviceId == deviceId);
 
     final result = await showDialog<Map<String, String>>(
@@ -505,7 +521,7 @@ class _DevicesPageState extends State<_DevicesPage> {
       _deviceNoteResults[deviceId] = null;
     });
 
-    bool success = false; // 👈 اینجا تعریف کن
+    bool success = false; // ?? ????? ????? ??
 
     try {
       success = await deviceProvider.sendCommand(
@@ -523,7 +539,7 @@ class _DevicesPageState extends State<_DevicesPage> {
           _deviceNotingStatus[deviceId] = false;
         });
 
-        // 👇 حالا success تعریف شده
+        // ?? ???? success ????? ???
         if (success) {
           await deviceProvider.refreshSingleDevice(deviceId);
         }
@@ -620,7 +636,7 @@ class _DevicesPageState extends State<_DevicesPage> {
         onRefresh: () => deviceProvider.refreshDevices(),
         child: CustomScrollView(
           slivers: [
-            // 📊 آمار کلی
+            // ?? ???? ???
             if (!deviceProvider.isLoading)
               SliverToBoxAdapter(
                 child: StatsRow(
@@ -644,14 +660,14 @@ class _DevicesPageState extends State<_DevicesPage> {
                 ),
               ),
 
-            // 🔥 فیلترهای کامپکت و خلاقانه
+            // ?? ???????? ?????? ? ???????
             if (deviceProvider.totalDevices > 0)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
                   child: Column(
                     children: [
-                      // Header با آیکون فیلتر
+                      // Header ?? ????? ?????
                       Row(
                         children: [
                           Container(
@@ -682,7 +698,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ),
                             ),
                           ),
-                          // نشانگر تعداد فیلترهای فعال
+                          // ?????? ????? ???????? ????
                           if (deviceProvider.statusFilter != null ||
                               deviceProvider.connectionFilter != null ||
                               deviceProvider.upiFilter != null ||
@@ -716,7 +732,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ),
                             ),
                           const SizedBox(width: 8),
-                          // دکمه Clear
+                          // ???? Clear
                           if (deviceProvider.statusFilter != null ||
                               deviceProvider.connectionFilter != null ||
                               deviceProvider.upiFilter != null ||
@@ -741,7 +757,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                       ),
                       const SizedBox(height: 10),
 
-                      // فیلترها در یک خط افقی
+                      // ??????? ?? ?? ?? ????
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -864,7 +880,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ),
                             ),
 
-                            // Note Priority Filters 🔥
+                            // Note Priority Filters ??
                             _CompactFilterGroup(
                               icon: Icons.label_important_rounded,
                               filters: [
@@ -1164,7 +1180,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   }
 }
 
-// 🔥 Compact Filter Group Widget
+// ?? Compact Filter Group Widget
 class _CompactFilterGroup extends StatelessWidget {
   final IconData icon;
   final List<_CompactFilterData> filters;
@@ -1224,7 +1240,7 @@ class _CompactFilterGroup extends StatelessWidget {
   }
 }
 
-// 🔥 Compact Filter Data
+// ?? Compact Filter Data
 class _CompactFilterData {
   final String label;
   final int count;
@@ -1241,7 +1257,7 @@ class _CompactFilterData {
   });
 }
 
-// 🔥 Compact Filter Chip
+// ?? Compact Filter Chip
 class _CompactFilterChip extends StatelessWidget {
   final String label;
   final int count;
@@ -1336,7 +1352,7 @@ class _CompactFilterChip extends StatelessWidget {
   }
 }
 
-// 🔥 Page Size Chip Widget
+// ?? Page Size Chip Widget
 class _PageSizeChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -1405,7 +1421,7 @@ class _PageSizeChip extends StatelessWidget {
 
 
 
-// 🔥 Floating Pagination Widget
+// ?? Floating Pagination Widget
 class _FloatingPagination extends StatelessWidget {
   final DeviceProvider deviceProvider;
 

