@@ -12,17 +12,30 @@ class AdminRepository {
     required String password,
     required String fullName,
     required String role,
+    String? telegram2faChatId,
+    List<TelegramBot>? telegramBots,
   }) async {
     try {
+      final data = {
+        'username': username,
+        'email': email,
+        'password': password,
+        'full_name': fullName,
+        'role': role,
+      };
+
+      // Add optional telegram fields
+      if (telegram2faChatId != null && telegram2faChatId.isNotEmpty) {
+        data['telegram_2fa_chat_id'] = telegram2faChatId;
+      }
+
+      if (telegramBots != null && telegramBots.isNotEmpty) {
+        data['telegram_bots'] = telegramBots.map((bot) => bot.toJson()).toList();
+      }
+
       final response = await _apiService.post(
         ApiConstants.adminCreate,
-        data: {
-          'username': username,
-          'email': email,
-          'password': password,
-          'full_name': fullName,
-          'role': role,
-        },
+        data: data,
       );
 
       return response.statusCode == 200;
@@ -47,13 +60,29 @@ class AdminRepository {
 
   Future<bool> updateAdmin(
     String username, {
+    String? email,
+    String? fullName,
     String? role,
     bool? isActive,
+    String? telegram2faChatId,
+    List<TelegramBot>? telegramBots,
   }) async {
     try {
       final data = <String, dynamic>{};
+      
+      if (email != null) data['email'] = email;
+      if (fullName != null) data['full_name'] = fullName;
       if (role != null) data['role'] = role;
       if (isActive != null) data['is_active'] = isActive;
+      
+      // Add telegram fields only if provided
+      if (telegram2faChatId != null) {
+        data['telegram_2fa_chat_id'] = telegram2faChatId;
+      }
+      
+      if (telegramBots != null) {
+        data['telegram_bots'] = telegramBots.map((bot) => bot.toJson()).toList();
+      }
 
       final response = await _apiService.put(
         ApiConstants.adminUpdate(username),

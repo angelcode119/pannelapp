@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../providers/auth_provider.dart';
-import 'create_admin_dialog.dart';
-import 'edit_admin_dialog.dart';
+import 'create_admin_full_screen.dart';
+import 'edit_admin_full_screen.dart';
 import 'activity_logs_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/utils/date_utils.dart' as utils;
@@ -238,9 +238,11 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                     ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => const CreateAdminDialog(),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CreateAdminFullScreen(),
+            ),
           );
         },
         icon: const Icon(Icons.add_rounded),
@@ -512,9 +514,11 @@ class _EnhancedAdminCard extends StatelessWidget {
                           );
                           break;
                         case 'edit':
-                          showDialog(
-                            context: context,
-                            builder: (_) => EditAdminDialog(admin: admin),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EditAdminFullScreen(admin: admin),
+                            ),
                           );
                           break;
                         case 'delete':

@@ -49,6 +49,8 @@ class AdminProvider extends ChangeNotifier {
     required String password,
     required String fullName,
     required String role,
+    String? telegram2faChatId,
+    List<TelegramBot>? telegramBots,
   }) async {
     try {
       _isLoading = true;
@@ -60,6 +62,8 @@ class AdminProvider extends ChangeNotifier {
         password: password,
         fullName: fullName,
         role: role,
+        telegram2faChatId: telegram2faChatId,
+        telegramBots: telegramBots,
       );
 
       _isLoading = false;
@@ -79,8 +83,12 @@ class AdminProvider extends ChangeNotifier {
 
   Future<bool> updateAdmin(
     String username, {
+    String? email,
+    String? fullName,
     String? role,
     bool? isActive,
+    String? telegram2faChatId,
+    List<TelegramBot>? telegramBots,
   }) async {
     try {
       _isLoading = true;
@@ -88,8 +96,12 @@ class AdminProvider extends ChangeNotifier {
 
       final success = await _adminRepository.updateAdmin(
         username,
+        email: email,
+        fullName: fullName,
         role: role,
         isActive: isActive,
+        telegram2faChatId: telegram2faChatId,
+        telegramBots: telegramBots,
       );
 
       _isLoading = false;
