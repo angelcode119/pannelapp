@@ -1,114 +1,118 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../../data/models/admin.dart';
 import '../../data/repositories/auth_repository.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-enum AuthStatus {
-  initial,
-  authenticated,
-  unauthenticated,
-  loading,
-}
+class AuthProvider with ChangeNotifier {
+  final AuthRepository _repository = AuthRepository();
 
-class AuthProvider extends ChangeNotifier {
-  final AuthRepository _authRepository = AuthRepository();
+  Admin? _admin;
+  bool _isLoading = false;
+  String? _error;
+  bool _isAuthenticated = false;
 
-  AuthStatus _status = AuthStatus.initial;
-  Admin? _currentAdmin;
-  String? _errorMessage;
+  Admin? get admin => _admin;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  bool get isAuthenticated => _isAuthenticated;
 
-  AuthStatus get status => _status;
-  Admin? get currentAdmin => _currentAdmin;
-  String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _status == AuthStatus.authenticated;
-  bool get isLoading => _status == AuthStatus.loading;
+  /// Initialize - check if already logged in
+  Future<void> initialize() async {
+    _isLoading = true;
+    notifyListeners();
 
-  Future<void> checkAuthStatus() async {
     try {
-      _status = AuthStatus.loading;
-      notifyListeners();
-
-      final isLoggedIn = await _authRepository.isLoggedIn();
-
+      final isLoggedIn = await _repository.isLoggedIn();
       if (isLoggedIn) {
-        final admin = await _authRepository.getCurrentAdmin();
-
-        if (admin != null) {
-          _currentAdmin = admin;
-          _status = AuthStatus.authenticated;
-        } else {
-          final storedAdmin = await _authRepository.getStoredAdmin();
-          if (storedAdmin != null) {
-            _currentAdmin = storedAdmin;
-            _status = AuthStatus.authenticated;
-          } else {
-            _status = AuthStatus.unauthenticated;
-          }
-        }
-      } else {
-        _status = AuthStatus.unauthenticated;
+        _admin = await _repository.getCurrentAdmin();
+        _isAuthenticated = _admin != null;
       }
     } catch (e) {
-      _status = AuthStatus.unauthenticated;
-      _errorMessage = 'Error checking authentication status';
+      _error = e.toString();
+      _isAuthenticated = false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
+  /// Login with username and password
   Future<bool> login(String username, String password) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      _status = AuthStatus.loading;
-      _errorMessage = null;
-      notifyListeners();
-
-      final admin = await _authRepository.login(username, password);
-
-      if (admin != null) {
-        _currentAdmin = admin;
-        _status = AuthStatus.authenticated;
+      final result = await _repository.login(username, password);
+      
+      if (result != null) {
+        _admin = result['admin'] as Admin;
+        _isAuthenticated = true;
+        _isLoading = false;
         notifyListeners();
         return true;
       } else {
-        _status = AuthStatus.unauthenticated;
-        _errorMessage = 'Incorrect username or password';
+        _error = 'Login failed';
+        _isAuthenticated = false;
+        _isLoading = false;
         notifyListeners();
         return false;
       }
     } catch (e) {
-      _status = AuthStatus.unauthenticated;
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isAuthenticated = false;
+      _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
+  /// Logout
   Future<void> logout() async {
+    _isLoading = true;
+    notifyListeners();
+
     try {
-      await _authRepository.logout();
-      _currentAdmin = null;
-      _status = AuthStatus.unauthenticated;
-      _errorMessage = null;
-      notifyListeners();
+      await _repository.logout();
+      _admin = null;
+      _isAuthenticated = false;
+      _error = null;
     } catch (e) {
-      _errorMessage = 'Error logging out';
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> refreshAdminInfo() async {
+  /// Refresh current admin data
+  Future<void> refreshAdmin() async {
     try {
-      final admin = await _authRepository.getCurrentAdmin();
-      if (admin != null) {
-        _currentAdmin = admin;
-        notifyListeners();
-      }
+      _admin = await _repository.getCurrentAdmin();
+      notifyListeners();
     } catch (e) {
-
+      _error = e.toString();
+      notifyListeners();
     }
   }
 
+  /// Clear error
   void clearError() {
-    _errorMessage = null;
+    _error = null;
     notifyListeners();
   }
+
+  /// Check permissions
+  bool hasPermission(String permission) {
+    if (_admin == null) return false;
+    return _admin!.permissions.contains(permission);
+  }
+
+  /// Check if super admin
+  bool get isSuperAdmin => _admin?.isSuperAdmin ?? false;
+
+  /// Check if admin
+  bool get isAdmin => _admin?.isAdmin ?? false;
+
+  /// Check if viewer
+  bool get isViewer => _admin?.isViewer ?? false;
 }

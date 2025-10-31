@@ -88,6 +88,18 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
     }
   }
 
+  Future<void> _handleEditNote() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => AddNoteDialog(device: _currentDevice),
+    );
+
+    if (result == true && mounted) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      await _refreshDeviceInfo();
+    }
+  }
+
   void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -105,6 +117,28 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
   String _getUpiPin() {
     return _currentDevice.upiPin ?? '123456';
+  }
+
+  Color _getNoteColor(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return const Color(0xFFF59E0B);
+      case 'highbalance':
+        return const Color(0xFF10B981);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  IconData _getNoteIcon(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return Icons.warning_rounded;
+      case 'highbalance':
+        return Icons.check_circle_rounded;
+      default:
+        return Icons.note_rounded;
+    }
   }
 
   @override
@@ -1201,6 +1235,149 @@ class _SettingTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+// 📝 Note Card Widget
+class _NoteCard extends StatelessWidget {
+  final Device device;
+  final bool isDark;
+  final VoidCallback onEdit;
+
+  const _NoteCard({
+    required this.device,
+    required this.isDark,
+    required this.onEdit,
+  });
+
+  Color _getNoteColor(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return const Color(0xFFF59E0B);
+      case 'highbalance':
+        return const Color(0xFF10B981);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  IconData _getNoteIcon(String? priority) {
+    switch (priority) {
+      case 'lowbalance':
+        return Icons.warning_rounded;
+      case 'highbalance':
+        return Icons.check_circle_rounded;
+      default:
+        return Icons.note_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ModernCard(
+      isDark: isDark,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _SectionHeader(
+                icon: Icons.note_rounded,
+                title: 'Note',
+                color: _getNoteColor(device.notePriority),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.edit_rounded, size: 18),
+                onPressed: onEdit,
+                tooltip: 'Edit Note',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getNoteColor(device.notePriority).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _getNoteColor(device.notePriority).withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      _getNoteIcon(device.notePriority),
+                      size: 16,
+                      color: _getNoteColor(device.notePriority),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      device.notePriorityLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _getNoteColor(device.notePriority),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      device.noteTimeAgo,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  device.noteMessage ?? '',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.white : const Color(0xFF334155),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// 📝 Add Note Button Widget
+class _AddNoteButton extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _AddNoteButton({
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: const Icon(Icons.note_add_rounded, size: 18),
+      label: const Text('Add Note'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        side: BorderSide(
+          color: isDark ? Colors.white24 : const Color(0xFFE2E8F0),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
     );
   }
 }
