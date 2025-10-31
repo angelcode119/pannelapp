@@ -1,188 +1,195 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../../data/models/admin.dart';
 import '../../data/models/activity_log.dart';
 import '../../data/repositories/admin_repository.dart';
 
-class AdminProvider extends ChangeNotifier {
-  final AdminRepository _adminRepository = AdminRepository();
+class AdminProvider with ChangeNotifier {
+  final AdminRepository _repository = AdminRepository();
 
   List<Admin> _admins = [];
   List<ActivityLog> _activities = [];
-  Map<String, dynamic>? _activityStats;
-
+  Map<String, dynamic> _activityStats = {};
+  
   bool _isLoading = false;
-  String? _errorMessage;
-
-  int _currentPage = 1;
+  bool _isLoadingActivities = false;
+  String? _error;
+  int _totalAdmins = 0;
   int _totalActivities = 0;
-  int _pageSize = 100;
 
   List<Admin> get admins => _admins;
   List<ActivityLog> get activities => _activities;
-  Map<String, dynamic>? get activityStats => _activityStats;
+  Map<String, dynamic> get activityStats => _activityStats;
   bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  int get currentPage => _currentPage;
+  bool get isLoadingActivities => _isLoadingActivities;
+  String? get error => _error;
+  int get totalAdmins => _totalAdmins;
   int get totalActivities => _totalActivities;
-  int get pageSize => _pageSize;
 
+  /// Fetch all admins
   Future<void> fetchAdmins() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-
-      _admins = await _adminRepository.getAdmins();
-
+      _admins = await _repository.getAllAdmins();
+      _totalAdmins = _admins.length;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
-      _errorMessage = 'Error fetching admins list';
       notifyListeners();
     }
   }
 
-  Future<bool> createAdmin({
-    required String username,
-    required String email,
-    required String password,
-    required String fullName,
-    required String role,
-  }) async {
+  /// Create new admin
+  Future<bool> createAdmin(AdminCreate adminCreate) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      _isLoading = true;
-      notifyListeners();
-
-      final success = await _adminRepository.createAdmin(
-        username: username,
-        email: email,
-        password: password,
-        fullName: fullName,
-        role: role,
-      );
-
-      _isLoading = false;
-
-      if (success) {
-        await fetchAdmins();
+      final newAdmin = await _repository.createAdmin(adminCreate);
+      if (newAdmin != null) {
+        _admins.add(newAdmin);
+        _totalAdmins = _admins.length;
+        _isLoading = false;
+        notifyListeners();
+        return true;
       }
-
-      return success;
-    } catch (e) {
+      _error = 'Failed to create admin';
       _isLoading = false;
-      _errorMessage = 'Error creating admin';
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  Future<bool> updateAdmin(
-    String username, {
-    String? role,
-    bool? isActive,
-  }) async {
+  /// Update admin
+  Future<bool> updateAdmin(String username, AdminUpdate adminUpdate) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      _isLoading = true;
-      notifyListeners();
-
-      final success = await _adminRepository.updateAdmin(
-        username,
-        role: role,
-        isActive: isActive,
-      );
-
-      _isLoading = false;
-
+      final success = await _repository.updateAdmin(username, adminUpdate);
       if (success) {
+        // Refresh admins list
         await fetchAdmins();
+      } else {
+        _error = 'Failed to update admin';
       }
-
+      _isLoading = false;
+      notifyListeners();
       return success;
     } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
-      _errorMessage = 'Error updating admin';
       notifyListeners();
       return false;
     }
   }
 
+  /// Delete admin
   Future<bool> deleteAdmin(String username) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      _isLoading = true;
-      notifyListeners();
-
-      final success = await _adminRepository.deleteAdmin(username);
-
-      _isLoading = false;
-
+      final success = await _repository.deleteAdmin(username);
       if (success) {
-        await fetchAdmins();
+        _admins.removeWhere((admin) => admin.username == username);
+        _totalAdmins = _admins.length;
+      } else {
+        _error = 'Failed to delete admin';
       }
-
+      _isLoading = false;
+      notifyListeners();
       return success;
     } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
-      _errorMessage = 'Error deleting admin';
       notifyListeners();
       return false;
     }
   }
 
+  /// Fetch admin activities
   Future<void> fetchActivities({
     String? adminUsername,
     String? activityType,
-    int? page,
+    int skip = 0,
+    int limit = 100,
   }) async {
+    _isLoadingActivities = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-
-      final skip = ((page ?? 1) - 1) * _pageSize;
-
-      final result = await _adminRepository.getActivities(
+      final result = await _repository.getActivities(
         adminUsername: adminUsername,
         activityType: activityType,
         skip: skip,
-        limit: _pageSize,
+        limit: limit,
       );
 
-      _activities = result['activities'] as List<ActivityLog>;
-      _totalActivities = result['total'] as int;
-      _currentPage = result['page'] as int;
-      _pageSize = result['page_size'] as int;
-
-      _isLoading = false;
+      final activitiesJson = result['activities'] as List;
+      _activities = activitiesJson
+          .map((json) => ActivityLog.fromJson(json))
+          .toList();
+      _totalActivities = result['total'] ?? 0;
+      
+      _isLoadingActivities = false;
       notifyListeners();
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Error fetching activity logs';
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoadingActivities = false;
       notifyListeners();
     }
   }
 
+  /// Fetch activity stats
   Future<void> fetchActivityStats({String? adminUsername}) async {
     try {
-      _activityStats = await _adminRepository.getActivityStats(
+      _activityStats = await _repository.getActivityStats(
         adminUsername: adminUsername,
       );
       notifyListeners();
     } catch (e) {
-      _errorMessage = 'Error fetching activity stats';
+      _error = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
     }
   }
 
+  /// Get admin by username
+  Admin? getAdminByUsername(String username) {
+    try {
+      return _admins.firstWhere((admin) => admin.username == username);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Clear error
   void clearError() {
-    _errorMessage = null;
+    _error = null;
     notifyListeners();
   }
 
-  void resetActivities() {
+  /// Clear all data
+  void clear() {
+    _admins = [];
     _activities = [];
-    _currentPage = 1;
+    _activityStats = {};
+    _totalAdmins = 0;
     _totalActivities = 0;
+    _error = null;
     notifyListeners();
   }
 }
