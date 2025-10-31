@@ -3,6 +3,7 @@ class ApiConstants {
   static const String baseUrl = 'http://95.134.130.160:8765';
 
   static const String login = '/auth/login';
+  static const String verify2fa = '/auth/verify-2fa';
   static const String logout = '/auth/logout';
   static const String me = '/auth/me';
 

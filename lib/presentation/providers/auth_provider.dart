@@ -16,12 +16,22 @@ class AuthProvider extends ChangeNotifier {
   AuthStatus _status = AuthStatus.initial;
   Admin? _currentAdmin;
   String? _errorMessage;
+  
+  // 2FA related fields
+  String? _tempToken;
+  String? _pendingUsername;
+  int? _otpExpiresIn;
 
   AuthStatus get status => _status;
   Admin? get currentAdmin => _currentAdmin;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
   bool get isLoading => _status == AuthStatus.loading;
+  
+  // 2FA getters
+  String? get tempToken => _tempToken;
+  String? get pendingUsername => _pendingUsername;
+  int? get otpExpiresIn => _otpExpiresIn;
 
   Future<void> checkAuthStatus() async {
     try {
@@ -55,22 +65,93 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String username, String password) async {
+  // Step 1: Login (may require 2FA)
+  Future<Map<String, dynamic>> login(String username, String password) async {
     try {
       _status = AuthStatus.loading;
       _errorMessage = null;
       notifyListeners();
 
-      final admin = await _authRepository.login(username, password);
+      final result = await _authRepository.login(username, password);
+
+      if (result['requires_2fa'] == true) {
+        // 2FA required - store temp token and username
+        _tempToken = result['temp_token'];
+        _pendingUsername = username;
+        _otpExpiresIn = result['expires_in'];
+        _status = AuthStatus.unauthenticated;
+        notifyListeners();
+        
+        return {
+          'success': true,
+          'requires_2fa': true,
+          'message': result['message'],
+        };
+      } else if (result['admin'] != null) {
+        // Direct login (2FA disabled)
+        _currentAdmin = result['admin'];
+        _status = AuthStatus.authenticated;
+        _tempToken = null;
+        _pendingUsername = null;
+        notifyListeners();
+        
+        return {
+          'success': true,
+          'requires_2fa': false,
+        };
+      }
+
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = 'Login failed';
+      notifyListeners();
+      
+      return {
+        'success': false,
+        'requires_2fa': false,
+      };
+    } catch (e) {
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      
+      return {
+        'success': false,
+        'requires_2fa': false,
+        'error': _errorMessage,
+      };
+    }
+  }
+
+  // Step 2: Verify OTP
+  Future<bool> verify2FA(String otpCode) async {
+    if (_tempToken == null || _pendingUsername == null) {
+      _errorMessage = 'No pending OTP verification';
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      _status = AuthStatus.loading;
+      _errorMessage = null;
+      notifyListeners();
+
+      final admin = await _authRepository.verify2FA(
+        _pendingUsername!,
+        otpCode,
+        _tempToken!,
+      );
 
       if (admin != null) {
         _currentAdmin = admin;
         _status = AuthStatus.authenticated;
+        _tempToken = null;
+        _pendingUsername = null;
+        _otpExpiresIn = null;
         notifyListeners();
         return true;
       } else {
         _status = AuthStatus.unauthenticated;
-        _errorMessage = 'Incorrect username or password';
+        _errorMessage = 'Invalid OTP code';
         notifyListeners();
         return false;
       }
@@ -80,6 +161,16 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  // Cancel 2FA flow
+  void cancel2FA() {
+    _tempToken = null;
+    _pendingUsername = null;
+    _otpExpiresIn = null;
+    _errorMessage = null;
+    _status = AuthStatus.unauthenticated;
+    notifyListeners();
   }
 
   Future<void> logout() async {

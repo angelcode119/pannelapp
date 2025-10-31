@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../main/main_screen.dart';
+import 'otp_verification_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -67,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.login(
+    final result = await authProvider.login(
       _usernameController.text.trim(),
       _passwordController.text,
     );
@@ -75,17 +76,36 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = false);
 
     if (mounted) {
-      if (success) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-            const MainScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
+      if (result['success'] == true) {
+        if (result['requires_2fa'] == true) {
+          // Navigate to OTP screen
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  OtpVerificationScreen(
+                message: result['message'] ?? 'Enter the OTP code sent to your Telegram',
+              ),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 500),
+            ),
+          );
+        } else {
+          // Direct login (2FA disabled)
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const MainScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 500),
+            ),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
