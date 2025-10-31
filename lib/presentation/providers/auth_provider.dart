@@ -35,6 +35,9 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Alias for initialize (for backward compatibility)
+  Future<void> checkAuthStatus() => initialize();
+
   /// Login with username and password
   Future<bool> login(String username, String password) async {
     _isLoading = true;

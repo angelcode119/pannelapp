@@ -42,6 +42,18 @@ class StorageService {
     await _secureStorage.delete(key: 'admin_info');
   }
 
+  Future<void> saveUsername(String username) async {
+    await _secureStorage.write(key: 'username', value: username);
+  }
+
+  Future<String?> getUsername() async {
+    return await _secureStorage.read(key: 'username');
+  }
+
+  Future<void> deleteUsername() async {
+    await _secureStorage.delete(key: 'username');
+  }
+
   Future<void> setThemeMode(String mode) async {
     await _prefs?.setString('theme_mode', mode);
   }

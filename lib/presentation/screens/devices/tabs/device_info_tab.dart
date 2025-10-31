@@ -87,18 +87,6 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
     }
   }
 
-  Future<void> _handleEditNote() async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (_) => AddNoteDialog(device: _currentDevice),
-    );
-
-    if (result == true && mounted) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      await _refreshDeviceInfo();
-    }
-  }
-
   void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(

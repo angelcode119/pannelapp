@@ -95,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen>
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    authProvider.errorMessage ?? 'Login failed',
+                    authProvider.error ?? 'Login failed',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
