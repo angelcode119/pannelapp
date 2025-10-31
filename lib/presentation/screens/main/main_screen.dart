@@ -54,7 +54,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final admin = authProvider.currentAdmin;
+    final admin = authProvider.admin;
     final isWide = MediaQuery.of(context).size.width > 768;
 
     final List<Widget> pages = [

@@ -5,7 +5,6 @@ import 'tabs/device_sms_tab.dart';
 import 'tabs/device_contacts_tab.dart';
 import 'tabs/device_calls_tab.dart';
 import 'tabs/device_logs_tab.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DeviceDetailScreen extends StatefulWidget {
   final Device device;

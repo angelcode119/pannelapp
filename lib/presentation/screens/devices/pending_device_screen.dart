@@ -4,7 +4,6 @@ import '../../../data/models/device.dart';
 import '../../../core/utils/date_utils.dart' as utils;
 import '../../providers/device_provider.dart';
 import 'device_detail_screen.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PendingDeviceScreen extends StatelessWidget {
   final Device device;

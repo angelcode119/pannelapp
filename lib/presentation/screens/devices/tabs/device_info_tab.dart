@@ -7,7 +7,6 @@ import '../../../../core/utils/date_utils.dart' as utils;
 import '../dialogs/edit_settings_dialog.dart';
 import '../dialogs/add_note_dialog.dart';
 import '../../../providers/device_provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DeviceInfoTab extends StatefulWidget {
   final Device device;

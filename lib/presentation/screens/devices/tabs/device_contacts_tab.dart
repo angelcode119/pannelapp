@@ -7,7 +7,6 @@ import '../../../../data/models/contact.dart';
 import '../../../../data/repositories/device_repository.dart';
 import '../../../providers/device_provider.dart';
 import '../../../widgets/common/empty_state.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DeviceContactsTab extends StatefulWidget {
   final Device device;

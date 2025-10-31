@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../data/models/device.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/utils/date_utils.dart' as utils;
 
 class DeviceCard extends StatefulWidget {

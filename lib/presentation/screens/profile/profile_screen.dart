@@ -5,7 +5,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../auth/login_screen.dart';
 import 'change_password_dialog.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/utils/date_utils.dart' as utils;
 
 class ProfileScreen extends StatefulWidget {

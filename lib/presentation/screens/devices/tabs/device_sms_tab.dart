@@ -8,7 +8,6 @@ import '../../../providers/device_provider.dart';
 import '../sms_detail_screen.dart';
 import '../dialogs/send_sms_dialog.dart';
 import '../../../widgets/common/empty_state.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum TimeFilter { all, today, yesterday, week, month }
 
