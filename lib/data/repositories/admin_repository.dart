@@ -16,7 +16,7 @@ class AdminRepository {
     List<TelegramBot>? telegramBots,
   }) async {
     try {
-      final data = {
+      final data = <String, dynamic>{
         'username': username,
         'email': email,
         'password': password,
