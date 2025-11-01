@@ -11,6 +11,9 @@ class ApiService {
 
   late Dio _dio;
   final StorageService _storage = StorageService();
+  
+  // Callback for session expired
+  Function()? onSessionExpired;
 
   void init() {
     _dio = Dio(BaseOptions(
@@ -34,10 +37,21 @@ class ApiService {
           return handler.next(options);
         },
         onError: (error, handler) async {
-
+          // Handle 401 Unauthorized (Session Expired)
           if (error.response?.statusCode == 401) {
-            await _storage.clearAll();
-
+            // Check if it's not the login endpoint
+            final isLoginEndpoint = error.requestOptions.path.contains('/auth/login') ||
+                error.requestOptions.path.contains('/auth/verify-2fa');
+            
+            if (!isLoginEndpoint) {
+              // Session expired due to single session control
+              await _storage.clearAll();
+              
+              // Notify listeners (AuthProvider) about session expiration
+              if (onSessionExpired != null) {
+                onSessionExpired!();
+              }
+            }
           }
           return handler.next(error);
         },
