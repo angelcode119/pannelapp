@@ -29,53 +29,71 @@ void main() async {
   ]);
 
   await StorageService().init();
-  
-  // تنظیم callback برای session expired
-  ApiService().onSessionExpired = () {
+
+  runApp(const MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  StreamSubscription<bool>? _sessionExpiredSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Listen به session expired events
+    _sessionExpiredSubscription = ApiService().sessionExpiredStream.listen((_) {
+      _handleSessionExpired();
+    });
+  }
+
+  void _handleSessionExpired() {
     // نمایش snackbar
-    navigatorKey.currentState?.context.let((context) {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: const [
-              Icon(Icons.error_outline, color: Colors.white, size: 20),
+              Icon(Icons.logout_rounded, color: Colors.white, size: 20),
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Session expired. You have been logged in from another device.',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  'Session expired! You were logged in from another device.',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                 ),
               ),
             ],
           ),
           backgroundColor: const Color(0xFFEF4444),
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 5),
           behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
-    });
+    }
     
-    // Navigate به Login Screen و حذف تمام صفحات قبلی
+    // Navigate به Login و حذف تمام stack
     navigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
-  };
-
-  runApp(const MyApp());
-}
-
-// Extension helper
-extension ContextExtension on BuildContext? {
-  void let(Function(BuildContext) block) {
-    if (this != null) {
-      block(this!);
-    }
   }
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  @override
+  void dispose() {
+    _sessionExpiredSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
