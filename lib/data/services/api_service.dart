@@ -29,7 +29,6 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-
           final token = await _storage.getToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -47,7 +46,7 @@ class ApiService {
               // Session expired due to single session control
               await _storage.clearAll();
               
-              // Notify listeners (AuthProvider) about session expiration
+              // Notify listeners about session expiration
               if (onSessionExpired != null) {
                 onSessionExpired!();
               }
