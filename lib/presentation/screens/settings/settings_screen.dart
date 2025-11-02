@@ -1,12 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/theme_provider.dart';
 import '../../../core/constants/api_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _notificationsEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSettings();
+  }
+
+  Future<void> _loadNotificationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+    });
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', value);
+    setState(() {
+      _notificationsEnabled = value;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            value ? 'Notifications enabled' : 'Notifications disabled',
+          ),
+          backgroundColor: value ? Colors.green : Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +60,32 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+
+          const _SectionHeader(title: 'Notifications'),
+
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 6.4),
+            child: SwitchListTile(
+              secondary: Icon(
+                _notificationsEnabled 
+                    ? Icons.notifications_active 
+                    : Icons.notifications_off,
+                color: _notificationsEnabled 
+                    ? Theme.of(context).primaryColor 
+                    : Colors.grey,
+              ),
+              title: const Text('Push Notifications'),
+              subtitle: Text(
+                _notificationsEnabled 
+                    ? 'Receive notifications from admins' 
+                    : 'Notifications are disabled',
+              ),
+              value: _notificationsEnabled,
+              onChanged: _toggleNotifications,
+            ),
+          ),
+
+          const SizedBox(height: 16),
 
           const _SectionHeader(title: 'Appearance'),
 

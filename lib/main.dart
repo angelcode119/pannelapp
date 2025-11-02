@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/api_service.dart';
 import 'presentation/providers/auth_provider.dart';
@@ -14,6 +16,13 @@ import 'core/theme/app_theme.dart';
 
 // Global navigator key برای navigate از هر جایی
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// Handle background messages
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint('📩 Background message: ${message.messageId}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +39,25 @@ void main() async {
   ]);
 
   await StorageService().init();
+
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Setup Firebase Messaging
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  // Request notification permission
+  final messaging = FirebaseMessaging.instance;
+  await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+    provisional: false,
+  );
+  
+  // Get FCM token
+  final token = await messaging.getToken();
+  debugPrint('🔔 FCM Token: $token');
 
   runApp(const MyApp());
 }
