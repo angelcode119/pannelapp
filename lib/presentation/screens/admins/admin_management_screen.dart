@@ -505,7 +505,7 @@ class _EnhancedAdminCard extends StatelessWidget {
                         ),
                       ],
                     ],
-                    onSelected: (value) {
+                    onSelected: (value) async {
                       switch (value) {
                         case 'view':
                           Navigator.push(
