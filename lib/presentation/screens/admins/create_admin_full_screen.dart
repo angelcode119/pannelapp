@@ -178,7 +178,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
   Widget _buildBasicInfoTab(bool isDark) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -568,7 +568,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
   Widget _buildTelegramBotsTab(bool isDark) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -849,7 +849,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
   Widget _buildReviewTab(bool isDark) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
