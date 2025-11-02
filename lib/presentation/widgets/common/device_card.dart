@@ -29,6 +29,21 @@ class DeviceCard extends StatefulWidget {
 class _DeviceCardState extends State<DeviceCard> {
   bool _isPressed = false;
 
+  Color _getNoteColor() {
+    if (widget.device.notePriority == null || widget.device.notePriority == 'none') {
+      return Colors.transparent;
+    }
+    
+    switch (widget.device.notePriority) {
+      case 'highbalance':
+        return Colors.green.shade500;
+      case 'lowbalance':
+        return Colors.red.shade500;
+      default:
+        return Colors.transparent;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -51,10 +66,26 @@ class _DeviceCardState extends State<DeviceCard> {
                 ? (isDark ? const Color(0xFF2D2416) : Colors.orange.shade50)
                 : (isDark ? const Color(0xFF252B3D) : Colors.white),
             borderRadius: BorderRadius.circular(10.24),
-            border: Border.all(
-              color: widget.device.isPending
-                  ? Colors.orange.withOpacity(0.3)
-                  : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+            border: Border(
+              left: BorderSide(
+                color: _getNoteColor(),
+                width: _getNoteColor() != Colors.transparent ? 4 : 0,
+              ),
+              top: BorderSide(
+                color: widget.device.isPending
+                    ? Colors.orange.withOpacity(0.3)
+                    : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+              ),
+              right: BorderSide(
+                color: widget.device.isPending
+                    ? Colors.orange.withOpacity(0.3)
+                    : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+              ),
+              bottom: BorderSide(
+                color: widget.device.isPending
+                    ? Colors.orange.withOpacity(0.3)
+                    : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+              ),
             ),
             boxShadow: [
               BoxShadow(
