@@ -20,28 +20,48 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "New FCM Token: $token")
+        Log.d(TAG, "?? ===== NEW FCM TOKEN =====")
+        Log.d(TAG, "?? Token: $token")
         
         // Save token locally
         saveTokenToPreferences(token)
+        Log.d(TAG, "? Token saved to preferences")
     }
     
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         
-        Log.d(TAG, "Message received from: ${remoteMessage.from}")
+        Log.d(TAG, "?? ===== MESSAGE RECEIVED =====")
+        Log.d(TAG, "?? From: ${remoteMessage.from}")
+        Log.d(TAG, "?? Message ID: ${remoteMessage.messageId}")
+        Log.d(TAG, "?? Sent Time: ${remoteMessage.sentTime}")
         
         // Handle data payload
         if (remoteMessage.data.isNotEmpty()) {
-            Log.d(TAG, "Message data: ${remoteMessage.data}")
+            Log.d(TAG, "?? Data payload: ${remoteMessage.data}")
             handleDataMessage(remoteMessage.data)
+        } else {
+            Log.d(TAG, "?? No data payload")
         }
         
         // Handle notification payload
         remoteMessage.notification?.let {
-            Log.d(TAG, "Notification: ${it.title} - ${it.body}")
-            showNotification(it.title ?: "", it.body ?: "", remoteMessage.data)
+            Log.d(TAG, "?? Notification payload: ${it.title} - ${it.body}")
+            showNotification(it.title ?: "New Notification", it.body ?: "", remoteMessage.data)
+        } ?: run {
+            Log.d(TAG, "?? No notification payload")
+            // ??? notification ?????? ????? ??? data ????? ?????
+            if (remoteMessage.data.isNotEmpty()) {
+                Log.d(TAG, "?? Creating notification from data payload")
+                showNotification(
+                    remoteMessage.data["title"] ?: "New Notification",
+                    remoteMessage.data["body"] ?: "You have a new notification",
+                    remoteMessage.data
+                )
+            }
         }
+        
+        Log.d(TAG, "? Message processing complete")
     }
     
     private fun handleDataMessage(data: Map<String, String>) {
@@ -65,10 +85,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
     
     private fun showNotification(title: String, body: String, data: Map<String, String>) {
+        Log.d(TAG, "?? Showing notification: $title - $body")
+        
         createNotificationChannel()
         
         val intent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             data.forEach { (key, value) ->
                 putExtra(key, value)
             }
@@ -76,9 +98,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         
         val pendingIntent = PendingIntent.getActivity(
             this,
-            0,
+            System.currentTimeMillis().toInt(),
             intent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
         val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -87,11 +109,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setContentText(body)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setVibrate(longArrayOf(0, 500, 500, 500))
         
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(0, notificationBuilder.build())
+        val notificationId = System.currentTimeMillis().toInt()
+        
+        Log.d(TAG, "?? Notification ID: $notificationId")
+        notificationManager.notify(notificationId, notificationBuilder.build())
+        Log.d(TAG, "? Notification sent to system")
     }
     
     private fun createNotificationChannel() {
@@ -103,10 +131,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 description = descriptionText
                 enableLights(true)
                 enableVibration(true)
+                setShowBadge(true)
             }
             
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
+            Log.d(TAG, "? Notification channel created/updated")
         }
     }
     
