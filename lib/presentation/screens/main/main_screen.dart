@@ -1450,3 +1450,141 @@ class _FloatingPagination extends StatelessWidget {
     );
   }
 }
+// 👑 Admin Filter Dropdown (فقط برای Super Admin)
+class _AdminFilterDropdown extends StatelessWidget {
+  final DeviceProvider deviceProvider;
+
+  const _AdminFilterDropdown({required this.deviceProvider});
+
+  @override
+  Widget build(BuildContext context) {
+    final adminProvider = context.watch<AdminProvider>();
+    
+    return PopupMenuButton<String?>(
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          gradient: deviceProvider.adminFilter != null
+              ? const LinearGradient(
+                  colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                )
+              : null,
+          color: deviceProvider.adminFilter == null
+              ? (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.grey.shade100)
+              : null,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: deviceProvider.adminFilter != null
+                ? const Color(0xFFEF4444)
+                : (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.grey.shade300),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.admin_panel_settings_rounded,
+              size: 14,
+              color: deviceProvider.adminFilter != null
+                  ? Colors.white
+                  : Theme.of(context).iconTheme.color?.withOpacity(0.7),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              deviceProvider.adminFilter ?? 'By Admin',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: deviceProvider.adminFilter != null
+                    ? Colors.white
+                    : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.arrow_drop_down_rounded,
+              size: 16,
+              color: deviceProvider.adminFilter != null
+                  ? Colors.white
+                  : Theme.of(context).iconTheme.color?.withOpacity(0.5),
+            ),
+          ],
+        ),
+      ),
+      itemBuilder: (context) {
+        return [
+          PopupMenuItem<String?>(
+            value: null,
+            child: Row(
+              children: const [
+                Icon(Icons.clear_all_rounded, size: 16),
+                SizedBox(width: 8),
+                Text('All Admins', style: TextStyle(fontSize: 13)),
+              ],
+            ),
+          ),
+          const PopupMenuDivider(),
+          ...adminProvider.admins.map((admin) => PopupMenuItem<String?>(
+                value: admin.username,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: admin.isActive ? Colors.green : Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        admin.username,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _getRoleColor(admin.role).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        admin.role,
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: _getRoleColor(admin.role),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ];
+      },
+      onSelected: (value) {
+        deviceProvider.setAdminFilter(value);
+      },
+    );
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'super_admin':
+        return const Color(0xFFEF4444);
+      case 'admin':
+        return const Color(0xFF6366F1);
+      case 'viewer':
+        return const Color(0xFF10B981);
+      default:
+        return Colors.grey;
+    }
+  }
+}
