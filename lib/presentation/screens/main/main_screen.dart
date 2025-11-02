@@ -554,6 +554,8 @@ class _DevicesPageState extends State<_DevicesPage> {
   @override
   Widget build(BuildContext context) {
     final deviceProvider = context.watch<DeviceProvider>();
+    final authProvider = context.watch<AuthProvider>();
+    final admin = authProvider.currentAdmin;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -1450,7 +1452,7 @@ class _FloatingPagination extends StatelessWidget {
     );
   }
 }
-// 👑 Admin Filter Dropdown (فقط برای Super Admin)
+// ?? Admin Filter Dropdown (??? ???? Super Admin)
 class _AdminFilterDropdown extends StatelessWidget {
   final DeviceProvider deviceProvider;
 
