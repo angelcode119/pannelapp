@@ -123,7 +123,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     icon: Icons.memory_rounded,
                     label: 'RAM',
                     value: _currentDevice.ramPercentFree != null
-                        ? '${_currentDevice.ramPercentFree}%'
+                        ? '${_currentDevice.ramPercentFree!.round()}%'
                         : 'N/A',
                     subtitle: 'Free',
                     color: _getRAMColor(_currentDevice.ramPercentFree),
@@ -161,7 +161,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                     icon: Icons.storage_rounded,
                     label: 'Storage',
                     value: _currentDevice.storagePercentFree != null
-                        ? '${_currentDevice.storagePercentFree}%'
+                        ? '${_currentDevice.storagePercentFree!.round()}%'
                         : 'N/A',
                     subtitle: 'Free',
                     color: _getStorageColor(_currentDevice.storagePercentFree),
