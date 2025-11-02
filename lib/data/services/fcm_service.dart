@@ -3,7 +3,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../main.dart';
+import '../../presentation/providers/device_provider.dart';
 import '../../presentation/screens/devices/device_detail_screen.dart';
 
 class FCMService {
