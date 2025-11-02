@@ -61,6 +61,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Management'),
+        automaticallyImplyLeading: false,
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 4),
@@ -237,13 +238,17 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       ),
                     ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => const CreateAdminFullScreen(),
             ),
           );
+          // Refresh admins list after returning
+          if (mounted) {
+            context.read<AdminProvider>().fetchAdmins();
+          }
         },
         icon: const Icon(Icons.add_rounded),
         label: const Text('Add Admin'),
@@ -514,12 +519,16 @@ class _EnhancedAdminCard extends StatelessWidget {
                           );
                           break;
                         case 'edit':
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => EditAdminFullScreen(admin: admin),
                             ),
                           );
+                          // Refresh admins list after returning
+                          if (context.mounted) {
+                            context.read<AdminProvider>().fetchAdmins();
+                          }
                           break;
                         case 'delete':
                           _deleteAdmin(context, admin.username);
