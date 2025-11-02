@@ -223,7 +223,8 @@ class DeviceProvider extends ChangeNotifier {
   // لود اولیه
   Future<void> fetchDevices() async {
     _currentPage = 1;
-    await fetchAppTypes();
+    // Fetch app types (non-blocking, errors are caught inside)
+    fetchAppTypes();
     await _loadCurrentPage();
   }
 
@@ -261,14 +262,15 @@ class DeviceProvider extends ChangeNotifier {
       _totalDevicesCount = result['total'];
       _stats = await _deviceRepository.getStats();
       
-      // Refresh app types to get updated counts
-      await fetchAppTypes();
+      // Refresh app types to get updated counts (non-blocking)
+      fetchAppTypes();
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _isLoading = false;
       _errorMessage = 'Error fetching devices list';
+      debugPrint('❌ Error in _loadCurrentPage: $e');
       notifyListeners();
     }
   }
@@ -352,8 +354,8 @@ class DeviceProvider extends ChangeNotifier {
       _totalDevicesCount = result['total'];
       _stats = await _deviceRepository.getStats();
       
-      // Refresh app types to get updated counts
-      await fetchAppTypes();
+      // Refresh app types to get updated counts (non-blocking)
+      fetchAppTypes();
 
       notifyListeners();
       debugPrint('✅ Auto-refresh completed: ${_devices.length} devices');

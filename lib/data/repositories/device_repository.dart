@@ -63,7 +63,7 @@ class DeviceRepository {
         'hasMore': false,
       };
     } catch (e) {
-      throw Exception('Error fetching devices list');
+      throw Exception('Error fetching devices list: $e');
     }
   }
 
