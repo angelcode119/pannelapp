@@ -26,11 +26,12 @@ class DeviceRepository {
     }
   }
 
-  // صفحه‌بندی با limit و skip و app_type filter
+  // صفحه‌بندی با limit و skip و app_type filter و admin filter
   Future<Map<String, dynamic>> getDevices({
     int skip = 0,
     int limit = 50,
     String? appType,
+    String? adminUsername,
   }) async {
     try {
       final queryParams = <String, dynamic>{
@@ -40,6 +41,10 @@ class DeviceRepository {
       
       if (appType != null && appType.isNotEmpty) {
         queryParams['app_type'] = appType;
+      }
+      
+      if (adminUsername != null && adminUsername.isNotEmpty) {
+        queryParams['admin_username'] = adminUsername;
       }
       
       final response = await _apiService.get(

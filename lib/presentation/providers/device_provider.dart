@@ -26,6 +26,7 @@ class DeviceProvider extends ChangeNotifier {
   UpiFilter? _upiFilter;
   NotePriorityFilter? _notePriorityFilter;  // 👈 جدید
   String? _appTypeFilter;  // 👈 جدید
+  String? _adminFilter;  // 👈 فیلتر ادمین (فقط برای سوپرادمین)
   String _searchQuery = '';
 
   // Pagination
@@ -49,6 +50,7 @@ class DeviceProvider extends ChangeNotifier {
   UpiFilter? get upiFilter => _upiFilter;
   NotePriorityFilter? get notePriorityFilter => _notePriorityFilter;  // 👈 جدید
   String? get appTypeFilter => _appTypeFilter;  // 👈 جدید
+  String? get adminFilter => _adminFilter;  // 👈 جدید
   String get searchQuery => _searchQuery;
   int get totalDevicesCount => _totalDevicesCount;
   int get currentPage => _currentPage;
@@ -186,6 +188,16 @@ class DeviceProvider extends ChangeNotifier {
       _appTypeFilter = null; // toggle off
     } else {
       _appTypeFilter = appType;
+    }
+    _currentPage = 1;
+    _loadCurrentPage();
+  }
+
+  void setAdminFilter(String? adminUsername) {
+    if (_adminFilter == adminUsername) {
+      _adminFilter = null; // toggle off
+    } else {
+      _adminFilter = adminUsername;
     }
     _currentPage = 1;
     _loadCurrentPage();
