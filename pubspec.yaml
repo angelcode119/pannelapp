@@ -25,6 +25,10 @@ dependencies:
   # UI & Styling
   google_fonts: ^6.2.1
   
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.10
+  
   # Utilities
   intl: ^0.20.2
   timeago: ^3.6.1
