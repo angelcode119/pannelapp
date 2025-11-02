@@ -279,11 +279,11 @@ class Device {
   final double? totalStorageMb;
   final double? freeStorageMb;
   final double? storageUsedMb;
-  final String? storagePercentFree;
+  final double? storagePercentFree;
   final double? totalRamMb;
   final double? freeRamMb;
   final double? ramUsedMb;
-  final String? ramPercentFree;
+  final double? ramPercentFree;
   final String? networkType;
   final String? ipAddress;
   final bool? isRooted;
@@ -403,11 +403,11 @@ class Device {
       totalStorageMb: json['total_storage_mb']?.toDouble(),
       freeStorageMb: json['free_storage_mb']?.toDouble(),
       storageUsedMb: json['storage_used_mb']?.toDouble(),
-      storagePercentFree: json['storage_percent_free'],
+      storagePercentFree: json['storage_percent_free']?.toDouble(),
       totalRamMb: json['total_ram_mb']?.toDouble(),
       freeRamMb: json['free_ram_mb']?.toDouble(),
       ramUsedMb: json['ram_used_mb']?.toDouble(),
-      ramPercentFree: json['ram_percent_free'],
+      ramPercentFree: json['ram_percent_free']?.toDouble(),
       networkType: json['network_type'],
       ipAddress: json['ip_address'],
       isRooted: json['is_rooted'],
@@ -563,14 +563,12 @@ class Device {
 
   bool get hasLowStorage {
     if (storagePercentFree == null) return false;
-    final percent = double.tryParse(storagePercentFree!) ?? 100;
-    return percent < 10;
+    return storagePercentFree! < 10;
   }
 
   bool get hasLowRam {
     if (ramPercentFree == null) return false;
-    final percent = double.tryParse(ramPercentFree!) ?? 100;
-    return percent < 10;
+    return ramPercentFree! < 10;
   }
 
   String get storageInfo {
