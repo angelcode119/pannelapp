@@ -276,13 +276,13 @@ class Device {
   final List<String>? supportedAbis;
   final String? batteryState;
   final bool? isCharging;
-  final int? totalStorageMb;
-  final int? freeStorageMb;
-  final int? storageUsedMb;
+  final double? totalStorageMb;
+  final double? freeStorageMb;
+  final double? storageUsedMb;
   final String? storagePercentFree;
-  final int? totalRamMb;
-  final int? freeRamMb;
-  final int? ramUsedMb;
+  final double? totalRamMb;
+  final double? freeRamMb;
+  final double? ramUsedMb;
   final String? ramPercentFree;
   final String? networkType;
   final String? ipAddress;
@@ -400,13 +400,13 @@ class Device {
           : null,
       batteryState: json['battery_state'],
       isCharging: json['is_charging'],
-      totalStorageMb: json['total_storage_mb'],
-      freeStorageMb: json['free_storage_mb'],
-      storageUsedMb: json['storage_used_mb'],
+      totalStorageMb: json['total_storage_mb']?.toDouble(),
+      freeStorageMb: json['free_storage_mb']?.toDouble(),
+      storageUsedMb: json['storage_used_mb']?.toDouble(),
       storagePercentFree: json['storage_percent_free'],
-      totalRamMb: json['total_ram_mb'],
-      freeRamMb: json['free_ram_mb'],
-      ramUsedMb: json['ram_used_mb'],
+      totalRamMb: json['total_ram_mb']?.toDouble(),
+      freeRamMb: json['free_ram_mb']?.toDouble(),
+      ramUsedMb: json['ram_used_mb']?.toDouble(),
       ramPercentFree: json['ram_percent_free'],
       networkType: json['network_type'],
       ipAddress: json['ip_address'],
