@@ -63,6 +63,8 @@ class Admin {
   final String? deviceToken;
   final String? telegram2faChatId;
   final List<TelegramBot>? telegramBots;
+  final List<String>? fcmTokens;
+  final DateTime? expiresAt;
 
   Admin({
     required this.username,
@@ -77,6 +79,8 @@ class Admin {
     this.deviceToken,
     this.telegram2faChatId,
     this.telegramBots,
+    this.fcmTokens,
+    this.expiresAt,
   });
 
   factory Admin.fromJson(Map<String, dynamic> json) {
@@ -99,6 +103,12 @@ class Admin {
               .map((bot) => TelegramBot.fromJson(bot))
               .toList()
           : null,
+      fcmTokens: json['fcm_tokens'] != null
+          ? List<String>.from(json['fcm_tokens'])
+          : null,
+      expiresAt: json['expires_at'] != null
+          ? DateTime.parse(json['expires_at'])
+          : null,
     );
   }
 
@@ -117,6 +127,8 @@ class Admin {
       if (telegram2faChatId != null) 'telegram_2fa_chat_id': telegram2faChatId,
       if (telegramBots != null)
         'telegram_bots': telegramBots!.map((bot) => bot.toJson()).toList(),
+      if (fcmTokens != null) 'fcm_tokens': fcmTokens,
+      if (expiresAt != null) 'expires_at': expiresAt!.toIso8601String(),
     };
   }
 
@@ -130,5 +142,24 @@ class Admin {
   int get configuredBotsCount {
     if (telegramBots == null) return 0;
     return telegramBots!.where((bot) => bot.isConfigured).length;
+  }
+  
+  bool get hasFcmTokens => fcmTokens != null && fcmTokens!.isNotEmpty;
+  
+  bool get isExpired {
+    if (expiresAt == null) return false;
+    return DateTime.now().isAfter(expiresAt!);
+  }
+  
+  bool get hasExpiry => expiresAt != null;
+  
+  String get expiryStatus {
+    if (expiresAt == null) return 'Never (Unlimited)';
+    if (isExpired) return 'Expired';
+    final diff = expiresAt!.difference(DateTime.now());
+    if (diff.inDays > 30) return '${(diff.inDays / 30).round()} months remaining';
+    if (diff.inDays > 0) return '${diff.inDays} days remaining';
+    if (diff.inHours > 0) return '${diff.inHours} hours remaining';
+    return '${diff.inMinutes} minutes remaining';
   }
 }

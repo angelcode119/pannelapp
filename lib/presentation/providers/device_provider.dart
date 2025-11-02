@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import '../../data/models/device.dart';
 import '../../data/models/stats.dart';
+import '../../data/models/app_type.dart';
 import '../../data/repositories/device_repository.dart';
 
 // 🔥 دسته‌بندی فیلترها
@@ -15,6 +16,7 @@ class DeviceProvider extends ChangeNotifier {
 
   List<Device> _devices = [];
   Stats? _stats;
+  AppTypesResponse? _appTypes;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -23,6 +25,7 @@ class DeviceProvider extends ChangeNotifier {
   ConnectionFilter? _connectionFilter;
   UpiFilter? _upiFilter;
   NotePriorityFilter? _notePriorityFilter;  // 👈 جدید
+  String? _appTypeFilter;  // 👈 جدید
   String _searchQuery = '';
 
   // Pagination
@@ -38,12 +41,14 @@ class DeviceProvider extends ChangeNotifier {
   // Getters
   List<Device> get devices => _filteredDevices;
   Stats? get stats => _stats;
+  AppTypesResponse? get appTypes => _appTypes;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   StatusFilter? get statusFilter => _statusFilter;
   ConnectionFilter? get connectionFilter => _connectionFilter;
   UpiFilter? get upiFilter => _upiFilter;
   NotePriorityFilter? get notePriorityFilter => _notePriorityFilter;  // 👈 جدید
+  String? get appTypeFilter => _appTypeFilter;  // 👈 جدید
   String get searchQuery => _searchQuery;
   int get totalDevicesCount => _totalDevicesCount;
   int get currentPage => _currentPage;
@@ -171,7 +176,19 @@ class DeviceProvider extends ChangeNotifier {
     } else {
       _notePriorityFilter = filter;
     }
-    notifyListeners();
+    _currentPage = 1;
+    _loadCurrentPage();
+  }
+  
+  // 👇 تنظیم فیلتر App Type (جدید)
+  void setAppTypeFilter(String? appType) {
+    if (_appTypeFilter == appType) {
+      _appTypeFilter = null; // toggle off
+    } else {
+      _appTypeFilter = appType;
+    }
+    _currentPage = 1;
+    _loadCurrentPage();
   }
 
   void clearAllFilters() {
@@ -179,6 +196,7 @@ class DeviceProvider extends ChangeNotifier {
     _connectionFilter = null;
     _upiFilter = null;
     _notePriorityFilter = null;  // 👈 جدید
+    _appTypeFilter = null;  // 👈 جدید
     notifyListeners();
   }
 
@@ -192,9 +210,20 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // لود app types
+  Future<void> fetchAppTypes() async {
+    try {
+      _appTypes = await _deviceRepository.getAppTypes();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error fetching app types: $e');
+    }
+  }
+
   // لود اولیه
   Future<void> fetchDevices() async {
     _currentPage = 1;
+    await fetchAppTypes();
     await _loadCurrentPage();
   }
 
@@ -225,11 +254,15 @@ class DeviceProvider extends ChangeNotifier {
       final result = await _deviceRepository.getDevices(
         skip: skip,
         limit: _pageSize,
+        appType: _appTypeFilter,
       );
 
       _devices = result['devices'];
       _totalDevicesCount = result['total'];
       _stats = await _deviceRepository.getStats();
+      
+      // Refresh app types to get updated counts
+      await fetchAppTypes();
 
       _isLoading = false;
       notifyListeners();
@@ -312,11 +345,15 @@ class DeviceProvider extends ChangeNotifier {
       final result = await _deviceRepository.getDevices(
         skip: skip,
         limit: _pageSize,
+        appType: _appTypeFilter,
       );
 
       _devices = result['devices'];
       _totalDevicesCount = result['total'];
       _stats = await _deviceRepository.getStats();
+      
+      // Refresh app types to get updated counts
+      await fetchAppTypes();
 
       notifyListeners();
       debugPrint('✅ Auto-refresh completed: ${_devices.length} devices');

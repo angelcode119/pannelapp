@@ -5,24 +5,46 @@ import '../models/contact.dart';
 import '../models/call_log.dart';
 import '../models/device_log.dart';
 import '../models/stats.dart';
+import '../models/app_type.dart';
 import '../services/api_service.dart';
 import '../../core/constants/api_constants.dart';
 
 class DeviceRepository {
   final ApiService _apiService = ApiService();
 
-  // صفحه‌بندی با limit و skip
+  // Get available app types
+  Future<AppTypesResponse?> getAppTypes() async {
+    try {
+      final response = await _apiService.get(ApiConstants.appTypes);
+
+      if (response.statusCode == 200) {
+        return AppTypesResponse.fromJson(response.data);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Error fetching app types');
+    }
+  }
+
+  // صفحه‌بندی با limit و skip و app_type filter
   Future<Map<String, dynamic>> getDevices({
     int skip = 0,
     int limit = 50,
+    String? appType,
   }) async {
     try {
+      final queryParams = {
+        'skip': skip,
+        'limit': limit,
+      };
+      
+      if (appType != null && appType.isNotEmpty) {
+        queryParams['app_type'] = appType;
+      }
+      
       final response = await _apiService.get(
         ApiConstants.devices,
-        queryParameters: {
-          'skip': skip,
-          'limit': limit,
-        },
+        queryParameters: queryParams,
       );
 
       if (response.statusCode == 200) {

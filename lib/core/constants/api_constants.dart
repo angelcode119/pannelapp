@@ -9,6 +9,7 @@ class ApiConstants {
 
   static const String devices = '/api/devices';
   static const String stats = '/api/stats';
+  static const String appTypes = '/api/devices/app-types';
 
   static const String adminCreate = '/admin/create';
   static const String adminList = '/admin/list';
@@ -24,4 +25,5 @@ class ApiConstants {
   static String deviceSettings(String deviceId) => '/api/devices/$deviceId/settings';
   static String adminUpdate(String username) => '/admin/$username';
   static String adminDelete(String username) => '/admin/$username';
+  static String adminDevices(String username) => '/api/admin/$username/devices';
 }

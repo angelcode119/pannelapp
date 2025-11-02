@@ -58,16 +58,23 @@ class AuthRepository {
   Future<Admin?> verify2FA(
     String username,
     String otpCode,
-    String tempToken,
-  ) async {
+    String tempToken, {
+    String? fcmToken,
+  }) async {
     try {
+      final data = {
+        'username': username,
+        'otp_code': otpCode,
+        'temp_token': tempToken,
+      };
+      
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        data['fcm_token'] = fcmToken;
+      }
+      
       final response = await _apiService.post(
         ApiConstants.verify2fa,
-        data: {
-          'username': username,
-          'otp_code': otpCode,
-          'temp_token': tempToken,
-        },
+        data: data,
       );
 
       if (response.statusCode == 200) {

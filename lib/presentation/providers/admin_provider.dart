@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/admin.dart';
 import '../../data/models/activity_log.dart';
+import '../../data/models/device.dart';
 import '../../data/repositories/admin_repository.dart';
 
 class AdminProvider extends ChangeNotifier {
@@ -9,6 +10,8 @@ class AdminProvider extends ChangeNotifier {
   List<Admin> _admins = [];
   List<ActivityLog> _activities = [];
   Map<String, dynamic>? _activityStats;
+  List<Device> _adminDevices = [];
+  int _totalAdminDevices = 0;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -20,6 +23,8 @@ class AdminProvider extends ChangeNotifier {
   List<Admin> get admins => _admins;
   List<ActivityLog> get activities => _activities;
   Map<String, dynamic>? get activityStats => _activityStats;
+  List<Device> get adminDevices => _adminDevices;
+  int get totalAdminDevices => _totalAdminDevices;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   int get currentPage => _currentPage;
@@ -51,6 +56,7 @@ class AdminProvider extends ChangeNotifier {
     required String role,
     String? telegram2faChatId,
     List<TelegramBot>? telegramBots,
+    DateTime? expiresAt,
   }) async {
     try {
       _isLoading = true;
@@ -64,6 +70,7 @@ class AdminProvider extends ChangeNotifier {
         role: role,
         telegram2faChatId: telegram2faChatId,
         telegramBots: telegramBots,
+        expiresAt: expiresAt,
       );
 
       _isLoading = false;
@@ -89,6 +96,7 @@ class AdminProvider extends ChangeNotifier {
     bool? isActive,
     String? telegram2faChatId,
     List<TelegramBot>? telegramBots,
+    DateTime? expiresAt,
   }) async {
     try {
       _isLoading = true;
@@ -102,6 +110,7 @@ class AdminProvider extends ChangeNotifier {
         isActive: isActive,
         telegram2faChatId: telegram2faChatId,
         telegramBots: telegramBots,
+        expiresAt: expiresAt,
       );
 
       _isLoading = false;
@@ -196,5 +205,36 @@ class AdminProvider extends ChangeNotifier {
     _currentPage = 1;
     _totalActivities = 0;
     notifyListeners();
+  }
+  
+  // Fetch devices for specific admin (Super Admin only)
+  Future<void> fetchAdminDevices(
+    String adminUsername, {
+    int skip = 0,
+    int limit = 100,
+    String? appType,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final result = await _adminRepository.getAdminDevices(
+        adminUsername,
+        skip: skip,
+        limit: limit,
+        appType: appType,
+      );
+
+      _adminDevices = result['devices'];
+      _totalAdminDevices = result['total'];
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Error fetching admin devices';
+      notifyListeners();
+    }
   }
 }

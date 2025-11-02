@@ -418,7 +418,7 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// 🔥 صفحه اصلی دستگاه‌ها
+// ?? ???? ???? ?????????
 class _DevicesPage extends StatefulWidget {
   @override
   State<_DevicesPage> createState() => _DevicesPageState();
@@ -487,7 +487,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   Future<void> _handleNoteDevice(String deviceId) async {
     final deviceProvider = context.read<DeviceProvider>();
 
-    // پیدا کردن دستگاه فعلی
+    // ???? ???? ?????? ????
     final device = deviceProvider.devices.firstWhere((d) => d.deviceId == deviceId);
 
     final result = await showDialog<Map<String, String>>(
@@ -505,7 +505,7 @@ class _DevicesPageState extends State<_DevicesPage> {
       _deviceNoteResults[deviceId] = null;
     });
 
-    bool success = false; // 👈 اینجا تعریف کن
+    bool success = false; // ?? ????? ????? ??
 
     try {
       success = await deviceProvider.sendCommand(
@@ -523,7 +523,7 @@ class _DevicesPageState extends State<_DevicesPage> {
           _deviceNotingStatus[deviceId] = false;
         });
 
-        // 👇 حالا success تعریف شده
+        // ?? ???? success ????? ???
         if (success) {
           await deviceProvider.refreshSingleDevice(deviceId);
         }
@@ -620,7 +620,7 @@ class _DevicesPageState extends State<_DevicesPage> {
         onRefresh: () => deviceProvider.refreshDevices(),
         child: CustomScrollView(
           slivers: [
-            // 📊 آمار کلی
+            // ?? ???? ???
             if (!deviceProvider.isLoading)
               SliverToBoxAdapter(
                 child: StatsRow(
@@ -644,14 +644,14 @@ class _DevicesPageState extends State<_DevicesPage> {
                 ),
               ),
 
-            // 🔥 فیلترهای کامپکت و خلاقانه
+            // ?? ???????? ?????? ? ???????
             if (deviceProvider.totalDevices > 0)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
                   child: Column(
                     children: [
-                      // Header با آیکون فیلتر
+                      // Header ?? ????? ?????
                       Row(
                         children: [
                           Container(
@@ -682,11 +682,12 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ),
                             ),
                           ),
-                          // نشانگر تعداد فیلترهای فعال
+                          // ?????? ????? ???????? ????
                           if (deviceProvider.statusFilter != null ||
                               deviceProvider.connectionFilter != null ||
                               deviceProvider.upiFilter != null ||
-                              deviceProvider.notePriorityFilter != null)
+                              deviceProvider.notePriorityFilter != null ||
+                              deviceProvider.appTypeFilter != null)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
@@ -704,7 +705,8 @@ class _DevicesPageState extends State<_DevicesPage> {
                                       deviceProvider.statusFilter,
                                       deviceProvider.connectionFilter,
                                       deviceProvider.upiFilter,
-                                      deviceProvider.notePriorityFilter
+                                      deviceProvider.notePriorityFilter,
+                                      deviceProvider.appTypeFilter,
                                     ].where((f) => f != null).length} active',
                                     style: TextStyle(
                                       fontSize: 10,
@@ -716,11 +718,12 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ),
                             ),
                           const SizedBox(width: 8),
-                          // دکمه Clear
+                          // ???? Clear
                           if (deviceProvider.statusFilter != null ||
                               deviceProvider.connectionFilter != null ||
                               deviceProvider.upiFilter != null ||
-                              deviceProvider.notePriorityFilter != null)
+                              deviceProvider.notePriorityFilter != null ||
+                              deviceProvider.appTypeFilter != null)
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -741,7 +744,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                       ),
                       const SizedBox(height: 10),
 
-                      // فیلترها در یک خط افقی
+                      // ??????? ?? ?? ?? ????
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -864,7 +867,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ),
                             ),
 
-                            // Note Priority Filters 🔥
+                            // Note Priority Filters ??
                             _CompactFilterGroup(
                               icon: Icons.label_important_rounded,
                               filters: [
@@ -891,6 +894,40 @@ class _DevicesPageState extends State<_DevicesPage> {
                                 ),
                               ],
                             ),
+                            
+                            // Divider
+                            if (deviceProvider.appTypes != null && deviceProvider.appTypes!.hasAppTypes)
+                              Container(
+                                width: 1,
+                                height: 40,
+                                margin: const EdgeInsets.symmetric(horizontal: 8),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Theme.of(context).dividerColor,
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            
+                            // App Type Filters ??
+                            if (deviceProvider.appTypes != null && deviceProvider.appTypes!.hasAppTypes)
+                              _CompactFilterGroup(
+                                icon: Icons.apps_rounded,
+                                filters: deviceProvider.appTypes!.appTypes
+                                    .map((appType) => _CompactFilterData(
+                                          label: appType.displayName,
+                                          count: appType.count,
+                                          isSelected: deviceProvider.appTypeFilter == appType.appType,
+                                          onTap: () => deviceProvider.setAppTypeFilter(appType.appType),
+                                          color: Color(int.parse(appType.color.replaceAll('#', '0xFF'))),
+                                        ))
+                                    .toList(),
+                              ),
                           ],
                         ),
                       ),
@@ -1164,7 +1201,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   }
 }
 
-// 🔥 Compact Filter Group Widget
+// ?? Compact Filter Group Widget
 class _CompactFilterGroup extends StatelessWidget {
   final IconData icon;
   final List<_CompactFilterData> filters;
@@ -1224,7 +1261,7 @@ class _CompactFilterGroup extends StatelessWidget {
   }
 }
 
-// 🔥 Compact Filter Data
+// ?? Compact Filter Data
 class _CompactFilterData {
   final String label;
   final int count;
@@ -1241,7 +1278,7 @@ class _CompactFilterData {
   });
 }
 
-// 🔥 Compact Filter Chip
+// ?? Compact Filter Chip
 class _CompactFilterChip extends StatelessWidget {
   final String label;
   final int count;
@@ -1336,7 +1373,7 @@ class _CompactFilterChip extends StatelessWidget {
   }
 }
 
-// 🔥 Page Size Chip Widget
+// ?? Page Size Chip Widget
 class _PageSizeChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -1405,7 +1442,7 @@ class _PageSizeChip extends StatelessWidget {
 
 
 
-// 🔥 Floating Pagination Widget
+// ?? Floating Pagination Widget
 class _FloatingPagination extends StatelessWidget {
   final DeviceProvider deviceProvider;
 

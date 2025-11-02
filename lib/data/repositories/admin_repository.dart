@@ -1,10 +1,53 @@
 import '../models/admin.dart';
 import '../models/activity_log.dart';
+import '../models/device.dart';
 import '../services/api_service.dart';
 import '../../core/constants/api_constants.dart';
 
 class AdminRepository {
   final ApiService _apiService = ApiService();
+  
+  // Get devices for specific admin (Super Admin only)
+  Future<Map<String, dynamic>> getAdminDevices(
+    String adminUsername, {
+    int skip = 0,
+    int limit = 100,
+    String? appType,
+  }) async {
+    try {
+      final queryParams = {
+        'skip': skip,
+        'limit': limit,
+      };
+      
+      if (appType != null && appType.isNotEmpty) {
+        queryParams['app_type'] = appType;
+      }
+      
+      final response = await _apiService.get(
+        ApiConstants.adminDevices(adminUsername),
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final List devices = response.data['devices'];
+        final int total = response.data['total'] ?? devices.length;
+
+        return {
+          'devices': devices.map((json) => Device.fromJson(json)).toList(),
+          'total': total,
+          'hasMore': (skip + devices.length) < total,
+        };
+      }
+      return {
+        'devices': <Device>[],
+        'total': 0,
+        'hasMore': false,
+      };
+    } catch (e) {
+      throw Exception('Error fetching admin devices');
+    }
+  }
 
   Future<bool> createAdmin({
     required String username,
@@ -14,6 +57,7 @@ class AdminRepository {
     required String role,
     String? telegram2faChatId,
     List<TelegramBot>? telegramBots,
+    DateTime? expiresAt,
   }) async {
     try {
       final data = <String, dynamic>{
@@ -31,6 +75,11 @@ class AdminRepository {
 
       if (telegramBots != null && telegramBots.isNotEmpty) {
         data['telegram_bots'] = telegramBots.map((bot) => bot.toJson()).toList();
+      }
+      
+      // Add expiry date if provided
+      if (expiresAt != null) {
+        data['expires_at'] = expiresAt.toIso8601String();
       }
 
       final response = await _apiService.post(
@@ -66,6 +115,7 @@ class AdminRepository {
     bool? isActive,
     String? telegram2faChatId,
     List<TelegramBot>? telegramBots,
+    DateTime? expiresAt,
   }) async {
     try {
       final data = <String, dynamic>{};
@@ -82,6 +132,11 @@ class AdminRepository {
       
       if (telegramBots != null) {
         data['telegram_bots'] = telegramBots.map((bot) => bot.toJson()).toList();
+      }
+      
+      // Add expiry date if provided (can be null to remove expiry)
+      if (expiresAt != null) {
+        data['expires_at'] = expiresAt.toIso8601String();
       }
 
       final response = await _apiService.put(
