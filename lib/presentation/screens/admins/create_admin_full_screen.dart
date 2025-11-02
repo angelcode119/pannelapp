@@ -201,66 +201,42 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ?????????? Header ??
+          // Compact Header
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Icon(
                     Icons.person_add_rounded,
                     color: Colors.white,
-                    size: 28,
+                    size: 16,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Basic Information',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Let\'s start with the basics',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+                const SizedBox(width: 8),
+                const Text(
+                  'Basic Information',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
 
           // Username
           TextFormField(
@@ -466,18 +442,18 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
           const SizedBox(height: 12),
 
-          // Role - ?? ???????? ????? ??
+          // Role Cards - Compact
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Select Role *',
+                'Role *',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   Expanded(
@@ -491,7 +467,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                       isDark: isDark,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: _RoleCard(
                       role: 'admin',
@@ -503,7 +479,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                       isDark: isDark,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: _RoleCard(
                       role: 'viewer',
@@ -520,21 +496,15 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             ],
           ),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           
-          // Expiry Date Section - ?????! ?
+          // Expiry Date - Compact
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.orange.withOpacity(0.1),
-                  Colors.deepOrange.withOpacity(0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(14),
+              color: Colors.orange.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: Colors.orange.withOpacity(0.3),
-                width: 1.5,
               ),
             ),
             child: Material(
@@ -570,80 +540,49 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                     });
                   }
                 },
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.event_rounded,
-                              color: Colors.orange,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Account Expiry',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _expiresAt == null
-                                      ? 'Tap to set expiration date'
-                                      : 'Expires on ${_expiresAt!.day}/${_expiresAt!.month}/${_expiresAt!.year}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: _expiresAt == null
-                                        ? Colors.grey
-                                        : Colors.orange.shade700,
-                                    fontWeight: _expiresAt == null
-                                        ? FontWeight.normal
-                                        : FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (_expiresAt != null)
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _expiresAt = null;
-                                });
-                              },
-                              icon: const Icon(Icons.close_rounded),
-                              color: Colors.red,
-                              iconSize: 20,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                        ],
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.event_rounded,
+                          color: Colors.orange,
+                          size: 14,
+                        ),
                       ),
-                      if (_expiresAt == null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            '?? Leave empty for unlimited access',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.orange.shade600,
-                              fontStyle: FontStyle.italic,
-                            ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _expiresAt == null
+                              ? 'Set expiry (optional)'
+                              : 'Expires: ${_expiresAt!.day}/${_expiresAt!.month}/${_expiresAt!.year}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: _expiresAt == null
+                                ? Colors.grey
+                                : Colors.orange.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (_expiresAt != null)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _expiresAt = null;
+                            });
+                          },
+                          child: Icon(
+                            Icons.close_rounded,
+                            color: Colors.red,
+                            size: 16,
                           ),
                         ),
                     ],
@@ -663,66 +602,42 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ?????????? Header ??
+          // Compact Header
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF0088cc), Color(0xFF00BFFF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF0088cc).withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Icon(
                     Icons.telegram_rounded,
                     color: Colors.white,
-                    size: 28,
+                    size: 16,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Telegram Configuration',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Setup 2FA & notification bots',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+                const SizedBox(width: 8),
+                const Text(
+                  'Telegram Configuration',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           
           // 2FA Section
           Container(
@@ -797,45 +712,34 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
           const SizedBox(height: 20),
 
-          // Notification Bots ?? Header ?????
+          // Notification Bots - Compact
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 child: const Icon(
                   Icons.notifications_active_rounded,
                   color: Colors.white,
-                  size: 18,
+                  size: 12,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Notification Bots',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      'Configure 5 bots for notifications',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                  ],
+              const SizedBox(width: 8),
+              const Text(
+                'Notification Bots (5)',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           // 5 Bots
           ...List.generate(5, (index) => _buildBotCard(index, isDark)),
@@ -852,19 +756,27 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
       '?? Login/Logout Logs',
       '?? Reserved for Future',
     ];
+    
+    final botColors = [
+      const Color(0xFF3B82F6),
+      const Color(0xFF10B981),
+      const Color(0xFFF59E0B),
+      const Color(0xFFEF4444),
+      const Color(0xFF8B5CF6),
+    ];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withOpacity(0.03)
-            : Colors.grey.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
+            : Colors.grey.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.1),
+              : Colors.black.withOpacity(0.08),
         ),
       ),
       child: Column(
@@ -873,35 +785,38 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 24,
+                height: 24,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  gradient: LinearGradient(
+                    colors: [botColors[index], botColors[index].withOpacity(0.7)],
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(5),
                 ),
-                child: Text(
-                  'Bot ${index + 1}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   botPurposes[index],
                   style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
           // Bot Name
           TextFormField(
@@ -1031,66 +946,42 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ?????????? Header ??
+          // Compact Header
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF10B981), Color(0xFF059669)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF10B981).withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Icon(
                     Icons.preview_rounded,
                     color: Colors.white,
-                    size: 28,
+                    size: 16,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Review & Confirm',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Everything looks good?',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+                const SizedBox(width: 8),
+                const Text(
+                  'Review & Confirm',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
 
           // Basic Info Card
           _buildReviewCard(
@@ -1342,13 +1233,11 @@ class _RoleCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
                   colors: [color, color.withOpacity(0.8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
                 )
               : null,
           color: isSelected
@@ -1356,24 +1245,15 @@ class _RoleCard extends StatelessWidget {
               : (isDark
                   ? Colors.white.withOpacity(0.05)
                   : Colors.grey.shade100),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected
                 ? color
                 : (isDark
                     ? Colors.white.withOpacity(0.1)
                     : Colors.grey.shade300),
-            width: isSelected ? 2 : 1,
+            width: isSelected ? 1.5 : 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1381,17 +1261,17 @@ class _RoleCard extends StatelessWidget {
             Icon(
               icon,
               color: isSelected ? Colors.white : color,
-              size: 32,
+              size: 18,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               title,
               style: TextStyle(
                 color: isSelected
                     ? Colors.white
                     : (isDark ? Colors.white : Colors.black87),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 9,
               ),
               textAlign: TextAlign.center,
             ),
