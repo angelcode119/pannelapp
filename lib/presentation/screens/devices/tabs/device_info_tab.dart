@@ -102,7 +102,7 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
       onRefresh: _refreshDeviceInfo,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(12.8),
+        padding: EdgeInsets.fromLTRB(12.8, 12.8, 12.8, MediaQuery.of(context).padding.bottom + 16),
         child: Column(
           children: [
             Row(
@@ -812,8 +812,6 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                 ],
               ),
             ),
-
-            const SizedBox(height: 16),
           ],
         ),
       ),

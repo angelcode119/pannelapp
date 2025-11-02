@@ -555,7 +555,7 @@ class _DeviceCallsTabState extends State<DeviceCallsTab>
       onRefresh: _fetchCalls,
       color: const Color(0xFF6366F1),
       child: ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.fromLTRB(12, 12, 12, MediaQuery.of(context).padding.bottom + 80),
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: filteredCalls.length,
         itemBuilder: (context, index) {
@@ -909,7 +909,7 @@ class _CallDetailsSheet extends StatelessWidget {
         color: isDark ? const Color(0xFF1A1F2E) : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).padding.bottom + 20),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
