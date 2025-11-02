@@ -58,45 +58,31 @@ class _DeviceCardState extends State<DeviceCard> {
       child: AnimatedScale(
         scale: _isPressed ? 0.98 : 1.0,
         duration: const Duration(milliseconds: 100),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(11.2),
-          decoration: BoxDecoration(
-            color: widget.device.isPending
-                ? (isDark ? const Color(0xFF2D2416) : Colors.orange.shade50)
-                : (isDark ? const Color(0xFF252B3D) : Colors.white),
-            borderRadius: BorderRadius.circular(10.24),
-            border: Border(
-              left: BorderSide(
-                color: _getNoteColor(),
-                width: _getNoteColor() != Colors.transparent ? 4 : 0,
-              ),
-              top: BorderSide(
+        child: Stack(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(11.2),
+              decoration: BoxDecoration(
                 color: widget.device.isPending
-                    ? Colors.orange.withOpacity(0.3)
-                    : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+                    ? (isDark ? const Color(0xFF2D2416) : Colors.orange.shade50)
+                    : (isDark ? const Color(0xFF252B3D) : Colors.white),
+                borderRadius: BorderRadius.circular(10.24),
+                border: Border.all(
+                  color: widget.device.isPending
+                      ? Colors.orange.withOpacity(0.3)
+                      : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.device.isPending
+                        ? Colors.orange.withOpacity(0.1)
+                        : Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              right: BorderSide(
-                color: widget.device.isPending
-                    ? Colors.orange.withOpacity(0.3)
-                    : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
-              ),
-              bottom: BorderSide(
-                color: widget.device.isPending
-                    ? Colors.orange.withOpacity(0.3)
-                    : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
-              ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: widget.device.isPending
-                    ? Colors.orange.withOpacity(0.1)
-                    : Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -377,6 +363,25 @@ class _DeviceCardState extends State<DeviceCard> {
                 ),
             ],
           ),
+        ),
+        // نوار رنگی سمت چپ برای نشان دادن Note Priority
+        if (_getNoteColor() != Colors.transparent)
+          Positioned(
+            left: 0,
+            top: 10,
+            bottom: 10,
+            child: Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: _getNoteColor(),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10.24),
+                  bottomLeft: Radius.circular(10.24),
+                ),
+              ),
+            ),
+          ),
+          ],
         ),
       ),
     );
