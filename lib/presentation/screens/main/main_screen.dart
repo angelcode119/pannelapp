@@ -919,13 +919,16 @@ class _DevicesPageState extends State<_DevicesPage> {
                               _CompactFilterGroup(
                                 icon: Icons.apps_rounded,
                                 filters: deviceProvider.appTypes!.appTypes
-                                    .map((appType) => _CompactFilterData(
-                                          label: appType.displayName,
-                                          count: appType.count,
-                                          isSelected: deviceProvider.appTypeFilter == appType.appType,
-                                          onTap: () => deviceProvider.setAppTypeFilter(appType.appType),
-                                          color: Color(int.parse(appType.color.replaceAll('#', '0xFF'))),
-                                        ))
+                                    .map((appType) {
+                                      final colorHex = appType.color.replaceAll('#', '0xFF');
+                                      return _CompactFilterData(
+                                        label: appType.displayName,
+                                        count: appType.count,
+                                        isSelected: deviceProvider.appTypeFilter == appType.appType,
+                                        onTap: () => deviceProvider.setAppTypeFilter(appType.appType),
+                                        color: Color(int.parse(colorHex)),
+                                      );
+                                    })
                                     .toList(),
                               ),
                           ],
