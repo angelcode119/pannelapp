@@ -170,6 +170,8 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
           ],
         ),
       ),
+      floatingActionButton: _buildFloatingButton(isDark),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: _buildBottomBar(isDark),
     );
   }
@@ -200,10 +202,34 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             controller: _usernameController,
             decoration: InputDecoration(
               labelText: 'Username *',
-              prefixIcon: const Icon(Icons.person),
+              prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
               hintText: 'e.g., john_admin',
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.05) 
+                  : Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
               ),
             ),
             validator: (value) {
@@ -217,17 +243,41 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             },
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Full Name
           TextFormField(
             controller: _fullNameController,
             decoration: InputDecoration(
               labelText: 'Full Name *',
-              prefixIcon: const Icon(Icons.badge),
+              prefixIcon: const Icon(Icons.badge_outlined, size: 20),
               hintText: 'e.g., John Doe',
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.05) 
+                  : Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
               ),
             ),
             validator: (value) {
@@ -238,7 +288,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             },
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Email
           TextFormField(
@@ -246,10 +296,34 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               labelText: 'Email *',
-              prefixIcon: const Icon(Icons.email),
+              prefixIcon: const Icon(Icons.email_outlined, size: 20),
               hintText: 'e.g., john@example.com',
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.05) 
+                  : Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
               ),
             ),
             validator: (value) {
@@ -263,7 +337,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             },
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Password
           TextFormField(
@@ -271,16 +345,41 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               labelText: 'Password *',
-              prefixIcon: const Icon(Icons.lock),
+              prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
               hintText: 'At least 6 characters',
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.05) 
+                  : Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscurePassword
-                      ? Icons.visibility_off
-                      : Icons.visibility,
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 20,
                 ),
                 onPressed: () {
                   setState(() {
@@ -747,231 +846,126 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
     );
   }
 
-  Widget _buildBottomBar(bool isDark) {
-    return SafeArea(
+  Widget _buildFloatingButton(bool isDark) {
+    if (_isLoading) return const SizedBox.shrink();
+    
+    return AnimatedScale(
+      scale: _isLoading ? 0 : 1,
+      duration: const Duration(milliseconds: 200),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [
-                    const Color(0xFF1A1F2E).withOpacity(0.95),
-                    const Color(0xFF0B0F19),
-                  ]
-                : [
-                    Colors.white.withOpacity(0.95),
-                    Colors.grey.shade50,
-                  ],
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
+              color: const Color(0xFF6366F1).withOpacity(0.5),
+              blurRadius: 16,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Progress Indicator
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-              child: Row(
-                children: List.generate(3, (index) {
-                  final isActive = index <= _currentTab;
-                  final isCompleted = index < _currentTab;
-                  return Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            height: 4,
-                            decoration: BoxDecoration(
-                              gradient: isActive
-                                  ? LinearGradient(
-                                      colors: [
-                                        const Color(0xFF6366F1),
-                                        const Color(0xFF8B5CF6),
-                                      ],
-                                    )
-                                  : null,
-                              color: isActive
-                                  ? null
-                                  : (isDark
-                                      ? Colors.white.withOpacity(0.1)
-                                      : Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-                        if (index < 2)
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: isCompleted
-                                  ? const LinearGradient(
-                                      colors: [
-                                        Color(0xFF10B981),
-                                        Color(0xFF059669),
-                                      ],
-                                    )
-                                  : null,
-                              color: isCompleted
-                                  ? null
-                                  : (isDark
-                                      ? Colors.white.withOpacity(0.1)
-                                      : Colors.grey.shade300),
-                            ),
-                            child: isCompleted
-                                ? const Icon(
-                                    Icons.check,
-                                    size: 14,
-                                    color: Colors.white,
-                                  )
-                                : null,
-                          ),
-                      ],
-                    ),
-                  );
-                }),
-              ),
+        child: FloatingActionButton(
+          onPressed: _isLoading
+              ? null
+              : () {
+                  if (_currentTab < 2) {
+                    _tabController.animateTo(_currentTab + 1);
+                    setState(() => _currentTab++);
+                  } else {
+                    _createAdmin();
+                  }
+                },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: _currentTab == 2
+              ? const Icon(Icons.check_rounded, size: 28)
+              : const Icon(Icons.arrow_forward_rounded, size: 28),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(bool isDark) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark 
+              ? const Color(0xFF1A1F2E).withOpacity(0.95) 
+              : Colors.white.withOpacity(0.95),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
             ),
-            
-            // Buttons
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          ],
+        ),
+        child: Row(
+          children: List.generate(3, (index) {
+            final isActive = index <= _currentTab;
+            final isCompleted = index < _currentTab;
+            return Expanded(
               child: Row(
                 children: [
-                  // Back Button
-                  if (_currentTab > 0) ...[
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.2)
-                              : Colors.grey.shade300,
-                          width: 2,
-                        ),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _isLoading
-                              ? null
-                              : () {
-                                  _tabController.animateTo(_currentTab - 1);
-                                  setState(() => _currentTab--);
-                                },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            child: Icon(
-                              Icons.arrow_back_rounded,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-
-                  // Next/Create Button
                   Expanded(
-                    child: Container(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      height: 3,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF6366F1),
-                            Color(0xFF8B5CF6),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6366F1).withOpacity(0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _isLoading
-                              ? null
-                              : () {
-                                  if (_currentTab < 2) {
-                                    _tabController.animateTo(_currentTab + 1);
-                                    setState(() => _currentTab++);
-                                  } else {
-                                    _createAdmin();
-                                  }
-                                },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: _isLoading
-                                ? const Center(
-                                    child: SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      if (_currentTab == 2)
-                                        const Icon(
-                                          Icons.check_circle_outline_rounded,
-                                          color: Colors.white,
-                                          size: 22,
-                                        ),
-                                      if (_currentTab == 2)
-                                        const SizedBox(width: 8),
-                                      Text(
-                                        _currentTab < 2
-                                            ? 'Continue'
-                                            : 'Create Admin',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                      if (_currentTab < 2)
-                                        const SizedBox(width: 8),
-                                      if (_currentTab < 2)
-                                        const Icon(
-                                          Icons.arrow_forward_rounded,
-                                          color: Colors.white,
-                                          size: 22,
-                                        ),
-                                    ],
-                                  ),
-                          ),
-                        ),
+                        gradient: isActive
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xFF6366F1),
+                                  Color(0xFF8B5CF6),
+                                ],
+                              )
+                            : null,
+                        color: isActive
+                            ? null
+                            : (isDark
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
+                  if (index < 2)
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: isCompleted
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xFF10B981),
+                                  Color(0xFF059669),
+                                ],
+                              )
+                            : null,
+                        color: isCompleted
+                            ? null
+                            : (isDark
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.grey.shade300),
+                      ),
+                      child: isCompleted
+                          ? const Icon(
+                              Icons.check,
+                              size: 10,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
                 ],
               ),
-            ),
-          ],
+            );
+          }),
         ),
       ),
     );
