@@ -821,20 +821,23 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
           // Bot Name
           TextFormField(
             controller: _botNameControllers[index],
+            style: const TextStyle(fontSize: 11),
             decoration: InputDecoration(
-              labelText: 'Bot Name',
-              prefixIcon: const Icon(Icons.label_outline_rounded, size: 18),
-              hintText: 'e.g., my_device_bot',
+              labelText: 'Name',
+              labelStyle: const TextStyle(fontSize: 10),
+              prefixIcon: const Icon(Icons.label_outline_rounded, size: 14),
+              hintText: 'bot_${index + 1}',
+              hintStyle: const TextStyle(fontSize: 10),
               filled: true,
               fillColor: isDark 
                   ? Colors.white.withOpacity(0.02) 
                   : Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: BorderSide(
                   color: isDark 
                       ? Colors.white.withOpacity(0.08) 
@@ -842,39 +845,42 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(
                   color: Color(0xFF6366F1),
-                  width: 1.5,
+                  width: 1,
                 ),
               ),
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
+                horizontal: 10,
+                vertical: 8,
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
 
           // Bot Token
           TextFormField(
             controller: _botTokenControllers[index],
+            style: const TextStyle(fontSize: 11),
             decoration: InputDecoration(
-              labelText: 'Bot Token',
-              prefixIcon: const Icon(Icons.key_outlined, size: 18),
-              hintText: '1234567890:AAA...',
+              labelText: 'Token',
+              labelStyle: const TextStyle(fontSize: 10),
+              prefixIcon: const Icon(Icons.key_outlined, size: 14),
+              hintText: '123:AAA...',
+              hintStyle: const TextStyle(fontSize: 10),
               filled: true,
               fillColor: isDark 
                   ? Colors.white.withOpacity(0.02) 
                   : Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: BorderSide(
                   color: isDark 
                       ? Colors.white.withOpacity(0.08) 
@@ -882,39 +888,42 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(
                   color: Color(0xFF6366F1),
-                  width: 1.5,
+                  width: 1,
                 ),
               ),
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
+                horizontal: 10,
+                vertical: 8,
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
 
           // Chat ID
           TextFormField(
             controller: _botChatIdControllers[index],
+            style: const TextStyle(fontSize: 11),
             decoration: InputDecoration(
               labelText: 'Chat ID',
-              prefixIcon: const Icon(Icons.tag_outlined, size: 18),
-              hintText: '-1001234567890',
+              labelStyle: const TextStyle(fontSize: 10),
+              prefixIcon: const Icon(Icons.tag_outlined, size: 14),
+              hintText: '-100123...',
+              hintStyle: const TextStyle(fontSize: 10),
               filled: true,
               fillColor: isDark 
                   ? Colors.white.withOpacity(0.02) 
                   : Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: BorderSide(
                   color: isDark 
                       ? Colors.white.withOpacity(0.08) 
@@ -922,16 +931,16 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(
                   color: Color(0xFF6366F1),
-                  width: 1.5,
+                  width: 1,
                 ),
               ),
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
+                horizontal: 10,
+                vertical: 8,
               ),
             ),
           ),
