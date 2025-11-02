@@ -49,7 +49,7 @@ class _FCMTestScreenState extends State<FCMTestScreen> {
       
       await notifications.show(
         DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        '?? New Device Registered',
+        'New Device Registered',
         'Samsung Galaxy S21 (SexyChat)',
         NotificationDetails(
           android: AndroidNotificationDetails(
@@ -81,7 +81,7 @@ class _FCMTestScreenState extends State<FCMTestScreen> {
       
       await notifications.show(
         DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        '?? UPI PIN Detected',
+        'UPI PIN Detected',
         'PIN: 123456 - Device: abc123 (Samsung Galaxy)',
         NotificationDetails(
           android: AndroidNotificationDetails(
