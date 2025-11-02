@@ -259,39 +259,37 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                         // Header
                         Column(
                           children: [
-                            // Icon
+                            // Icon - Compact
                             Container(
-                              width: 80,
-                              height: 80,
+                              width: 56,
+                              height: 56,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
                                   colors: [
                                     Color(0xFF6366F1),
                                     Color(0xFF8B5CF6),
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
                                     color: const Color(0xFF6366F1)
-                                        .withOpacity(0.4),
-                                    blurRadius: 30,
-                                    offset: const Offset(0, 15),
+                                        .withOpacity(0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
                                   ),
                                 ],
                               ),
                               child: const Icon(
                                 Icons.verified_user_rounded,
-                                size: 40,
+                                size: 28,
                                 color: Colors.white,
                               ),
                             ),
 
-                            const SizedBox(height: 30),
+                            const SizedBox(height: 20),
 
-                            // Title
+                            // Title - Compact
                             ShaderMask(
                               shaderCallback: (bounds) => const LinearGradient(
                                 colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -299,16 +297,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                               child: const Text(
                                 'Enter OTP Code',
                                 style: TextStyle(
-                                  fontSize: 28.8,
-                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
                                   color: Colors.white,
-                                  letterSpacing: -1,
+                                  letterSpacing: -0.5,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
 
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
 
                             // Message
                             Text(
@@ -325,17 +323,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
 
                             const SizedBox(height: 16),
 
-                            // Timer
+                            // Timer - Compact
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+                                horizontal: 12,
+                                vertical: 6,
                               ),
                               decoration: BoxDecoration(
                                 color: _remainingSeconds < 60
                                     ? const Color(0xFFEF4444).withOpacity(0.15)
                                     : const Color(0xFF6366F1).withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: _remainingSeconds < 60
                                       ? const Color(0xFFEF4444).withOpacity(0.3)
@@ -347,16 +345,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                 children: [
                                   Icon(
                                     Icons.timer_rounded,
-                                    size: 16,
+                                    size: 14,
                                     color: _remainingSeconds < 60
                                         ? const Color(0xFFEF4444)
                                         : const Color(0xFF6366F1),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   Text(
                                     _formattedTime,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: _remainingSeconds < 60
                                           ? const Color(0xFFEF4444)
@@ -372,11 +370,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                           ],
                         ),
 
-                        const SizedBox(height: 50),
+                        const SizedBox(height: 30),
 
-                        // OTP Input Card
+                        // OTP Input Card - Compact
                         Container(
-                          padding: const EdgeInsets.all(22.4),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF1A1F2E)
@@ -407,9 +405,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                 }),
                               ),
 
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 20),
 
-                              // Verify Button
+                              // Verify Button - Compact
                               Container(
                                 width: double.infinity,
                                 decoration: BoxDecoration(
@@ -419,13 +417,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                       Color(0xFF8B5CF6)
                                     ],
                                   ),
-                                  borderRadius: BorderRadius.circular(10.24),
+                                  borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(0xFF6366F1)
-                                          .withOpacity(0.4),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 10),
+                                          .withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
@@ -436,18 +434,18 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
                                     padding: const EdgeInsets.symmetric(
-                                        vertical: 14.4),
+                                        vertical: 12),
                                     shape: RoundedRectangleBorder(
                                       borderRadius:
-                                          BorderRadius.circular(10.24),
+                                          BorderRadius.circular(8),
                                     ),
                                   ),
                                   child: _isVerifying
                                       ? const SizedBox(
-                                          height: 17.6,
-                                          width: 17.6,
+                                          height: 16,
+                                          width: 16,
                                           child: CircularProgressIndicator(
-                                            strokeWidth: 2.5,
+                                            strokeWidth: 2,
                                             valueColor:
                                                 AlwaysStoppedAnimation<Color>(
                                                     Colors.white),
@@ -456,28 +454,28 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                                       : const Text(
                                           'Verify',
                                           style: TextStyle(
-                                            fontSize: 12.8,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.w700,
                                             color: Colors.white,
-                                            letterSpacing: 0.5,
+                                            letterSpacing: 0.3,
                                           ),
                                         ),
                                 ),
                               ),
 
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 10),
 
-                              // Cancel Button
+                              // Cancel Button - Compact
                               TextButton(
                                 onPressed: _isVerifying ? null : _handleCancel,
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 14.4),
+                                      vertical: 10),
                                 ),
                                 child: Text(
                                   'Cancel',
                                   style: TextStyle(
-                                    fontSize: 12.8,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: isDark
                                         ? Colors.white70
@@ -529,20 +527,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
 
   Widget _buildOtpBox(int index, bool isDark) {
     return Container(
-      width: 45,
-      height: 56,
+      width: 40,
+      height: 48,
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withOpacity(0.05)
             : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(10.24),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: _controllers[index].text.isNotEmpty
               ? const Color(0xFF6366F1)
               : (isDark
                   ? Colors.white.withOpacity(0.1)
                   : Colors.black.withOpacity(0.05)),
-          width: _controllers[index].text.isNotEmpty ? 1.6 : 1,
+          width: _controllers[index].text.isNotEmpty ? 1.5 : 1,
         ),
       ),
       child: TextField(
@@ -552,13 +550,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
         keyboardType: TextInputType.number,
         maxLength: 1,
         style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
           color: isDark ? Colors.white : const Color(0xFF0F172A),
         ),
         decoration: const InputDecoration(
           counterText: '',
           border: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
         ),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
