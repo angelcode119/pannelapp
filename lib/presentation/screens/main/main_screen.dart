@@ -647,8 +647,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                 ),
               ),
 
-
-            // Mini Filters - خفن و کوچیک! 🔥
+            // Mini Filters - ???! ??
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
@@ -741,6 +740,103 @@ class _DevicesPageState extends State<_DevicesPage> {
                 ),
               ),
             ),
+
+            // Page Size
+            if (deviceProvider.totalDevices > 0)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.view_list, size: 14, color: Theme.of(context).colorScheme.primary),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Per Page',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _PageSizeChip(label: '25', selected: deviceProvider.pageSize == 25, onTap: () => deviceProvider.setPageSize(25)),
+                              const SizedBox(width: 4),
+                              _PageSizeChip(label: '50', selected: deviceProvider.pageSize == 50, onTap: () => deviceProvider.setPageSize(50)),
+                              const SizedBox(width: 4),
+                              _PageSizeChip(label: '100', selected: deviceProvider.pageSize == 100, onTap: () => deviceProvider.setPageSize(100)),
+                              const SizedBox(width: 4),
+                              _PageSizeChip(label: '200', selected: deviceProvider.pageSize == 200, onTap: () => deviceProvider.setPageSize(200)),
+                              const SizedBox(width: 4),
+                              _PageSizeChip(label: '500', selected: deviceProvider.pageSize == 500, onTap: () => deviceProvider.setPageSize(500)),
+                              const SizedBox(width: 4),
+                              _PageSizeChip(label: '1000', selected: deviceProvider.pageSize == 1000, onTap: () => deviceProvider.setPageSize(1000)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Page Info
+            if (deviceProvider.devices.isNotEmpty && !deviceProvider.isLoading)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF14B8A6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF14B8A6).withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline_rounded, size: 16, color: Color(0xFF14B8A6)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Showing ${deviceProvider.devices.length} devices (${deviceProvider.devices.where((d) => d.isActive).length} active, ${deviceProvider.devices.where((d) => d.isOnline).length} online)',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF14B8A6)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Search
+            if (deviceProvider.totalDevicesCount > 0)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(9.6, 0, 9.6, 12),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search devices...',
+                      prefixIcon: const Icon(Icons.search_rounded, size: 16),
+                      suffixIcon: deviceProvider.searchQuery.isNotEmpty
+                          ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 16),
                         onPressed: () {
                           _searchController.clear();
                           deviceProvider.clearSearch();
@@ -1364,91 +1460,5 @@ class _AdminFilterDropdown extends StatelessWidget {
       default:
         return Colors.grey;
     }
-  }
-}
-
-// 🔥 Mini Filter Chip - خفن و کوچیک!
-class _MiniFilterChip extends StatelessWidget {
-  final String label;
-  final int? count;
-  final IconData? icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final Color color;
-
-  const _MiniFilterChip({
-    required this.label,
-    this.count,
-    this.icon,
-    this.isSelected = false,
-    required this.onTap,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(colors: [color, color.withOpacity(0.8)])
-              : null,
-          color: isSelected
-              ? null
-              : (isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: isSelected
-                ? color
-                : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300),
-            width: 0.5,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 12, color: isSelected ? Colors.white : color),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? Colors.white70 : Colors.black87),
-              ),
-            ),
-            if (count != null && count! > 0) ...[
-              const SizedBox(width: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white.withOpacity(0.25)
-                      : color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? Colors.white : color,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 }
