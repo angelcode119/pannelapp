@@ -151,7 +151,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const _SuccessDialog(),
+      builder: (context) => const SuccessDialog(),
     );
   }
 
