@@ -296,7 +296,7 @@ class FCMService {
             // Get device from provider
             final deviceProvider = context.read<DeviceProvider>();
             final device = deviceProvider.devices.firstWhere(
-              (d) => d.id == deviceId,
+              (d) => d.deviceId == deviceId,
               orElse: () => throw Exception('Device not found'),
             );
             return DeviceDetailScreen(device: device);
