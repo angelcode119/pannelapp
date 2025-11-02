@@ -77,7 +77,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 
                 showNotification(
-                    "?? New Device Registered",
+                    "New Device Registered",
                     body,
                     data
                 )
@@ -94,7 +94,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 
                 showNotification(
-                    "?? UPI PIN Detected",
+                    "UPI PIN Detected",
                     body,
                     data
                 )

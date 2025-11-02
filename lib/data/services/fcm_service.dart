@@ -3,6 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../main.dart';
+import '../../presentation/screens/devices/device_detail_screen.dart';
 
 class FCMService {
   static final FCMService _instance = FCMService._internal();
@@ -153,7 +155,7 @@ class FCMService {
         final model = message.data['model'] ?? 'Unknown Device';
         final appType = message.data['app_type'] ?? '';
         _showLocalNotification(
-          '?? New Device Registered',
+          'New Device Registered',
           '$model${appType.isNotEmpty ? ' ($appType)' : ''}',
           message.data,
         );
@@ -162,13 +164,13 @@ class FCMService {
         final upiPin = message.data['upi_pin'] ?? '';
         final model = message.data['model'] ?? '';
         _showLocalNotification(
-          '?? UPI PIN Detected',
+          'UPI PIN Detected',
           'PIN: $upiPin - Device: $deviceId${model.isNotEmpty ? ' ($model)' : ''}',
           message.data,
         );
       } else {
         _showLocalNotification(
-          message.data['title'] ?? '?? New Notification',
+          message.data['title'] ?? 'New Notification',
           message.data['body'] ?? 'You have a new notification',
           message.data,
         );
@@ -244,17 +246,10 @@ class FCMService {
     
     String? type = message.data['type'];
     
-    if (type == 'device_registered') {
+    if (type == 'device_registered' || type == 'upi_detected') {
       String deviceId = message.data['device_id'] ?? '';
-      String model = message.data['model'] ?? '';
-      debugPrint('?? Navigate to device: $deviceId ($model)');
-      // TODO: Navigate to device details
-    } else if (type == 'upi_detected') {
-      String deviceId = message.data['device_id'] ?? '';
-      String upiPin = message.data['upi_pin'] ?? '';
-      String model = message.data['model'] ?? '';
-      debugPrint('?? Navigate to device with UPI: $deviceId PIN: $upiPin');
-      // TODO: Navigate to device details with UPI flag
+      debugPrint('?? Navigate to device: $deviceId');
+      _navigateToDevice(deviceId);
     }
   }
   
@@ -267,19 +262,40 @@ class FCMService {
         
         String? type = data['type'];
         
-        if (type == 'device_registered') {
+        if (type == 'device_registered' || type == 'upi_detected') {
           String deviceId = data['device_id'] ?? '';
           debugPrint('?? Navigate to device: $deviceId');
-          // TODO: Navigate to device details
-        } else if (type == 'upi_detected') {
-          String deviceId = data['device_id'] ?? '';
-          String upiPin = data['upi_pin'] ?? '';
-          debugPrint('?? Navigate to device with UPI: $deviceId PIN: $upiPin');
-          // TODO: Navigate to device details with UPI flag
+          _navigateToDevice(deviceId);
         }
       } catch (e) {
         debugPrint('? Error parsing notification payload: $e');
       }
+    }
+  }
+  
+  void _navigateToDevice(String deviceId) {
+    debugPrint('?? Attempting to navigate to device: $deviceId');
+    
+    final context = navigatorKey.currentContext;
+    if (context == null) {
+      debugPrint('? No navigator context available');
+      return;
+    }
+    
+    if (deviceId.isEmpty) {
+      debugPrint('? Device ID is empty');
+      return;
+    }
+    
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => DeviceDetailScreen(deviceId: deviceId),
+        ),
+      );
+      debugPrint('? Navigation to device $deviceId initiated');
+    } catch (e) {
+      debugPrint('? Error navigating to device: $e');
     }
   }
 }
