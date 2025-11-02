@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/device_provider.dart';
+import '../../providers/admin_provider.dart';
 import '../../widgets/common/stats_card.dart';
 import '../../../data/models/stats.dart';
 import '../../widgets/common/device_card.dart';
@@ -707,6 +708,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                                       deviceProvider.upiFilter,
                                       deviceProvider.notePriorityFilter,
                                       deviceProvider.appTypeFilter,
+                                      deviceProvider.adminFilter,
                                     ].where((f) => f != null).length} active',
                                     style: TextStyle(
                                       fontSize: 10,
@@ -744,12 +746,11 @@ class _DevicesPageState extends State<_DevicesPage> {
                       ),
                       const SizedBox(height: 10),
 
-                      // ??????? ?? ?? ?? ????
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: [
+                      // Wrap Filters - ????? ? ???? scroll! ??
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
                             // Status Filters
                             _CompactFilterGroup(
                               icon: Icons.check_circle_outline,
@@ -769,24 +770,6 @@ class _DevicesPageState extends State<_DevicesPage> {
                                   color: const Color(0xFFF59E0B),
                                 ),
                               ],
-                            ),
-
-                            // Divider
-                            Container(
-                              width: 1,
-                              height: 40,
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Theme.of(context).dividerColor,
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
                             ),
 
                             // Connection Filters
@@ -810,24 +793,6 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ],
                             ),
 
-                            // Divider
-                            Container(
-                              width: 1,
-                              height: 40,
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Theme.of(context).dividerColor,
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
-                            ),
-
                             // UPI Filters
                             _CompactFilterGroup(
                               icon: Icons.payment,
@@ -847,24 +812,6 @@ class _DevicesPageState extends State<_DevicesPage> {
                                   color: const Color(0xFF6B7280),
                                 ),
                               ],
-                            ),
-
-                            // Divider
-                            Container(
-                              width: 1,
-                              height: 40,
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Theme.of(context).dividerColor,
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
                             ),
 
                             // Note Priority Filters ??
@@ -895,25 +842,6 @@ class _DevicesPageState extends State<_DevicesPage> {
                               ],
                             ),
                             
-                            // Divider
-                            if (deviceProvider.appTypes != null && deviceProvider.appTypes!.hasAppTypes)
-                              Container(
-                                width: 1,
-                                height: 40,
-                                margin: const EdgeInsets.symmetric(horizontal: 8),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Theme.of(context).dividerColor,
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            
                             // App Type Filters ??
                             if (deviceProvider.appTypes != null && deviceProvider.appTypes!.hasAppTypes)
                               _CompactFilterGroup(
@@ -928,8 +856,11 @@ class _DevicesPageState extends State<_DevicesPage> {
                                         ))
                                     .toList(),
                               ),
-                          ],
-                        ),
+                          
+                          // Admin Filter (??? ???? Super Admin) ??
+                          if (admin?.isSuperAdmin == true)
+                            _AdminFilterDropdown(deviceProvider: deviceProvider),
+                        ],
                       ),
                     ],
                   ),
