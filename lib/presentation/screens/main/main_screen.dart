@@ -647,157 +647,135 @@ class _DevicesPageState extends State<_DevicesPage> {
                 ),
               ),
 
-            // Categorized Filters - ???! ??
+            // Ultra Compact Filters - ??? ? ??? ? ???! ??
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Container(
+                height: 32,
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   children: [
-                    // Clear All (??? ?????? ???? ????)
+                    // Clear All
                     if (deviceProvider.statusFilter != null ||
                         deviceProvider.connectionFilter != null ||
                         deviceProvider.upiFilter != null ||
                         deviceProvider.notePriorityFilter != null ||
                         deviceProvider.appTypeFilter != null ||
-                        deviceProvider.adminFilter != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _MiniFilterChip(
-                          label: 'Clear All Filters',
-                          icon: Icons.close_rounded,
-                          color: Colors.red,
-                          onTap: () => deviceProvider.clearAllFilters(),
-                        ),
+                        deviceProvider.adminFilter != null) ...[
+                      _UltraCompactChip(
+                        label: 'Clear',
+                        icon: Icons.close_rounded,
+                        color: Colors.red,
+                        onTap: () => deviceProvider.clearAllFilters(),
                       ),
+                      const SizedBox(width: 8),
+                      _FilterDivider(color: Colors.red.withOpacity(0.3)),
+                      const SizedBox(width: 8),
+                    ],
                     
-                    // Status Group
-                    _FilterCategory(
-                      title: 'Status',
-                      icon: Icons.check_circle_outline,
+                    // Status
+                    _CategoryIcon(icon: Icons.check_circle_outline, color: const Color(0xFF10B981)),
+                    _UltraCompactChip(
+                      label: 'Active',
+                      count: deviceProvider.activeDevices,
+                      isSelected: deviceProvider.statusFilter == StatusFilter.active,
+                      onTap: () => deviceProvider.setStatusFilter(StatusFilter.active),
                       color: const Color(0xFF10B981),
-                      children: [
-                        _MiniFilterChip(
-                          label: 'Active',
-                          count: deviceProvider.activeDevices,
-                          isSelected: deviceProvider.statusFilter == StatusFilter.active,
-                          onTap: () => deviceProvider.setStatusFilter(StatusFilter.active),
-                          color: const Color(0xFF10B981),
-                        ),
-                        _MiniFilterChip(
-                          label: 'Pending',
-                          count: deviceProvider.pendingDevices,
-                          isSelected: deviceProvider.statusFilter == StatusFilter.pending,
-                          onTap: () => deviceProvider.setStatusFilter(StatusFilter.pending),
-                          color: const Color(0xFFF59E0B),
-                        ),
-                      ],
                     ),
-                    
-                    const SizedBox(height: 6),
-                    
-                    // Connection Group
-                    _FilterCategory(
-                      title: 'Connection',
-                      icon: Icons.wifi_rounded,
-                      color: const Color(0xFF14B8A6),
-                      children: [
-                        _MiniFilterChip(
-                          label: 'Online',
-                          count: deviceProvider.onlineDevices,
-                          isSelected: deviceProvider.connectionFilter == ConnectionFilter.online,
-                          onTap: () => deviceProvider.setConnectionFilter(ConnectionFilter.online),
-                          color: const Color(0xFF14B8A6),
-                        ),
-                        _MiniFilterChip(
-                          label: 'Offline',
-                          count: deviceProvider.offlineDevices,
-                          isSelected: deviceProvider.connectionFilter == ConnectionFilter.offline,
-                          onTap: () => deviceProvider.setConnectionFilter(ConnectionFilter.offline),
-                          color: const Color(0xFFEF4444),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 6),
-                    
-                    // Payment Group
-                    _FilterCategory(
-                      title: 'Payment',
-                      icon: Icons.payment_rounded,
-                      color: const Color(0xFF8B5CF6),
-                      children: [
-                        _MiniFilterChip(
-                          label: 'With UPI',
-                          count: deviceProvider.devicesWithUpi,
-                          isSelected: deviceProvider.upiFilter == UpiFilter.withUpi,
-                          onTap: () => deviceProvider.setUpiFilter(UpiFilter.withUpi),
-                          color: const Color(0xFF8B5CF6),
-                        ),
-                        _MiniFilterChip(
-                          label: 'No UPI',
-                          count: deviceProvider.devicesWithoutUpi,
-                          isSelected: deviceProvider.upiFilter == UpiFilter.withoutUpi,
-                          onTap: () => deviceProvider.setUpiFilter(UpiFilter.withoutUpi),
-                          color: const Color(0xFF6B7280),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 6),
-                    
-                    // Priority Group
-                    _FilterCategory(
-                      title: 'Priority',
-                      icon: Icons.label_important_rounded,
+                    _UltraCompactChip(
+                      label: 'Pending',
+                      count: deviceProvider.pendingDevices,
+                      isSelected: deviceProvider.statusFilter == StatusFilter.pending,
+                      onTap: () => deviceProvider.setStatusFilter(StatusFilter.pending),
                       color: const Color(0xFFF59E0B),
-                      children: [
-                        _MiniFilterChip(
-                          label: 'High Balance',
-                          count: deviceProvider.devicesHighBalance,
-                          isSelected: deviceProvider.notePriorityFilter == NotePriorityFilter.highBalance,
-                          onTap: () => deviceProvider.setNotePriorityFilter(NotePriorityFilter.highBalance),
-                          color: const Color(0xFF10B981),
-                        ),
-                        _MiniFilterChip(
-                          label: 'Low Balance',
-                          count: deviceProvider.devicesLowBalance,
-                          isSelected: deviceProvider.notePriorityFilter == NotePriorityFilter.lowBalance,
-                          onTap: () => deviceProvider.setNotePriorityFilter(NotePriorityFilter.lowBalance),
-                          color: const Color(0xFFF59E0B),
-                        ),
-                      ],
+                    ),
+                    const SizedBox(width: 4),
+                    _FilterDivider(color: const Color(0xFF10B981).withOpacity(0.3)),
+                    const SizedBox(width: 4),
+                    
+                    // Connection
+                    _CategoryIcon(icon: Icons.wifi_rounded, color: const Color(0xFF14B8A6)),
+                    _UltraCompactChip(
+                      label: 'Online',
+                      count: deviceProvider.onlineDevices,
+                      isSelected: deviceProvider.connectionFilter == ConnectionFilter.online,
+                      onTap: () => deviceProvider.setConnectionFilter(ConnectionFilter.online),
+                      color: const Color(0xFF14B8A6),
+                    ),
+                    _UltraCompactChip(
+                      label: 'Offline',
+                      count: deviceProvider.offlineDevices,
+                      isSelected: deviceProvider.connectionFilter == ConnectionFilter.offline,
+                      onTap: () => deviceProvider.setConnectionFilter(ConnectionFilter.offline),
+                      color: const Color(0xFFEF4444),
+                    ),
+                    const SizedBox(width: 4),
+                    _FilterDivider(color: const Color(0xFF14B8A6).withOpacity(0.3)),
+                    const SizedBox(width: 4),
+                    
+                    // Payment
+                    _CategoryIcon(icon: Icons.payment_rounded, color: const Color(0xFF8B5CF6)),
+                    _UltraCompactChip(
+                      label: 'UPI',
+                      count: deviceProvider.devicesWithUpi,
+                      isSelected: deviceProvider.upiFilter == UpiFilter.withUpi,
+                      onTap: () => deviceProvider.setUpiFilter(UpiFilter.withUpi),
+                      color: const Color(0xFF8B5CF6),
+                    ),
+                    _UltraCompactChip(
+                      label: 'No UPI',
+                      count: deviceProvider.devicesWithoutUpi,
+                      isSelected: deviceProvider.upiFilter == UpiFilter.withoutUpi,
+                      onTap: () => deviceProvider.setUpiFilter(UpiFilter.withoutUpi),
+                      color: const Color(0xFF6B7280),
+                    ),
+                    const SizedBox(width: 4),
+                    _FilterDivider(color: const Color(0xFF8B5CF6).withOpacity(0.3)),
+                    const SizedBox(width: 4),
+                    
+                    // Priority
+                    _CategoryIcon(icon: Icons.label_important_rounded, color: const Color(0xFFF59E0B)),
+                    _UltraCompactChip(
+                      label: 'High',
+                      count: deviceProvider.devicesHighBalance,
+                      isSelected: deviceProvider.notePriorityFilter == NotePriorityFilter.highBalance,
+                      onTap: () => deviceProvider.setNotePriorityFilter(NotePriorityFilter.highBalance),
+                      color: const Color(0xFF10B981),
+                    ),
+                    _UltraCompactChip(
+                      label: 'Low',
+                      count: deviceProvider.devicesLowBalance,
+                      isSelected: deviceProvider.notePriorityFilter == NotePriorityFilter.lowBalance,
+                      onTap: () => deviceProvider.setNotePriorityFilter(NotePriorityFilter.lowBalance),
+                      color: const Color(0xFFF59E0B),
                     ),
                     
-                    // App Types Group
+                    // App Types
                     if (deviceProvider.appTypes != null && deviceProvider.appTypes!.hasAppTypes) ...[
-                      const SizedBox(height: 6),
-                      _FilterCategory(
-                        title: 'App Type',
-                        icon: Icons.apps_rounded,
-                        color: const Color(0xFF6366F1),
-                        children: deviceProvider.appTypes!.appTypes.map((appType) => _MiniFilterChip(
-                          label: appType.displayName,
-                          count: appType.count,
-                          isSelected: deviceProvider.appTypeFilter == appType.appType,
-                          onTap: () => deviceProvider.setAppTypeFilter(appType.appType),
-                          color: Color(appType.colorValue),
-                        )).toList(),
-                      ),
+                      const SizedBox(width: 4),
+                      _FilterDivider(color: const Color(0xFF6366F1).withOpacity(0.3)),
+                      const SizedBox(width: 4),
+                      _CategoryIcon(icon: Icons.apps_rounded, color: const Color(0xFF6366F1)),
+                      ...deviceProvider.appTypes!.appTypes.map((appType) => _UltraCompactChip(
+                        label: appType.displayName,
+                        count: appType.count,
+                        isSelected: deviceProvider.appTypeFilter == appType.appType,
+                        onTap: () => deviceProvider.setAppTypeFilter(appType.appType),
+                        color: Color(appType.colorValue),
+                      )),
                     ],
                     
-                    // Admin Group (Super Admin only)
+                    // Admin Filter (Super Admin only)
                     if (admin?.isSuperAdmin == true) ...[
-                      const SizedBox(height: 6),
-                      _FilterCategory(
-                        title: 'Administrator',
-                        icon: Icons.admin_panel_settings_rounded,
-                        color: const Color(0xFFEF4444),
-                        children: [
-                          _AdminFilterDropdown(deviceProvider: deviceProvider),
-                        ],
-                      ),
+                      const SizedBox(width: 4),
+                      _FilterDivider(color: const Color(0xFFEF4444).withOpacity(0.3)),
+                      const SizedBox(width: 4),
+                      _CategoryIcon(icon: Icons.admin_panel_settings_rounded, color: const Color(0xFFEF4444)),
+                      _AdminFilterDropdown(deviceProvider: deviceProvider),
                     ],
+                    
+                    const SizedBox(width: 12),
                   ],
                 ),
               ),
@@ -1585,66 +1563,8 @@ class _AdminFilterDropdown extends StatelessWidget {
   }
 }
 
-// ?? Filter Category - ????????? ???!
-class _FilterCategory extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final List<Widget> children;
-
-  const _FilterCategory({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Category Header
-        Padding(
-          padding: const EdgeInsets.only(left: 2, bottom: 4),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(icon, size: 11, color: color),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Filters
-        Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          children: children,
-        ),
-      ],
-    );
-  }
-}
-
-// ?? Mini Filter Chip - ??? ? ?????!
-class _MiniFilterChip extends StatelessWidget {
+// ?? Ultra Compact Chip - ?????? ???!
+class _UltraCompactChip extends StatelessWidget {
   final String label;
   final int? count;
   final IconData? icon;
@@ -1652,7 +1572,7 @@ class _MiniFilterChip extends StatelessWidget {
   final VoidCallback onTap;
   final Color color;
 
-  const _MiniFilterChip({
+  const _UltraCompactChip({
     required this.label,
     this.count,
     this.icon,
@@ -1668,61 +1588,132 @@ class _MiniFilterChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        duration: const Duration(milliseconds: 150),
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        margin: const EdgeInsets.only(right: 4),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? LinearGradient(colors: [color, color.withOpacity(0.8)])
+              ? LinearGradient(
+                  colors: [color, color.withOpacity(0.85)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
               : null,
           color: isSelected
               ? null
-              : (isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100),
+              : (isDark ? Colors.white.withOpacity(0.06) : Colors.grey.shade50),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: isSelected
                 ? color
-                : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300),
-            width: 0.5,
+                : (isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade200),
+            width: 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 12, color: isSelected ? Colors.white : color),
-              const SizedBox(width: 4),
+              Icon(icon, size: 11, color: isSelected ? Colors.white : color),
+              const SizedBox(width: 3),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 9.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: isSelected
                     ? Colors.white
                     : (isDark ? Colors.white70 : Colors.black87),
+                letterSpacing: 0.1,
               ),
             ),
             if (count != null && count! > 0) ...[
-              const SizedBox(width: 4),
+              const SizedBox(width: 3),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withOpacity(0.25)
+                      ? Colors.white.withOpacity(0.3)
                       : color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(3),
                 ),
                 child: Text(
                   '$count',
                   style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w800,
                     color: isSelected ? Colors.white : color,
                   ),
                 ),
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ?? Category Icon - ????? ?????????
+class _CategoryIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+
+  const _CategoryIcon({
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      margin: const EdgeInsets.only(right: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 0.5,
+        ),
+      ),
+      child: Icon(icon, size: 13, color: color),
+    );
+  }
+}
+
+// ? Filter Divider - ????????
+class _FilterDivider extends StatelessWidget {
+  final Color color;
+
+  const _FilterDivider({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 20,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withOpacity(0.0),
+            color,
+            color.withOpacity(0.0),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
       ),
     );
