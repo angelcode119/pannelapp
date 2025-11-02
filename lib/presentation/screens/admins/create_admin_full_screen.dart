@@ -748,66 +748,231 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
   }
 
   Widget _buildBottomBar(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1F2E) : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? [
+                    const Color(0xFF1A1F2E).withOpacity(0.95),
+                    const Color(0xFF0B0F19),
+                  ]
+                : [
+                    Colors.white.withOpacity(0.95),
+                    Colors.grey.shade50,
+                  ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Back Button
-          if (_currentTab > 0)
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        _tabController.animateTo(_currentTab - 1);
-                        setState(() => _currentTab--);
-                      },
-                child: const Text('Back'),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Progress Indicator
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+              child: Row(
+                children: List.generate(3, (index) {
+                  final isActive = index <= _currentTab;
+                  final isCompleted = index < _currentTab;
+                  return Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height: 4,
+                            decoration: BoxDecoration(
+                              gradient: isActive
+                                  ? LinearGradient(
+                                      colors: [
+                                        const Color(0xFF6366F1),
+                                        const Color(0xFF8B5CF6),
+                                      ],
+                                    )
+                                  : null,
+                              color: isActive
+                                  ? null
+                                  : (isDark
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                        if (index < 2)
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: isCompleted
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFF10B981),
+                                        Color(0xFF059669),
+                                      ],
+                                    )
+                                  : null,
+                              color: isCompleted
+                                  ? null
+                                  : (isDark
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.grey.shade300),
+                            ),
+                            child: isCompleted
+                                ? const Icon(
+                                    Icons.check,
+                                    size: 14,
+                                    color: Colors.white,
+                                  )
+                                : null,
+                          ),
+                      ],
+                    ),
+                  );
+                }),
               ),
             ),
-          
-          if (_currentTab > 0) const SizedBox(width: 12),
+            
+            // Buttons
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              child: Row(
+                children: [
+                  // Back Button
+                  if (_currentTab > 0) ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.2)
+                              : Colors.grey.shade300,
+                          width: 2,
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _isLoading
+                              ? null
+                              : () {
+                                  _tabController.animateTo(_currentTab - 1);
+                                  setState(() => _currentTab--);
+                                },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            child: Icon(
+                              Icons.arrow_back_rounded,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
 
-          // Next/Create Button
-          Expanded(
-            flex: _currentTab == 0 ? 1 : 1,
-            child: ElevatedButton(
-              onPressed: _isLoading
-                  ? null
-                  : () {
-                      if (_currentTab < 2) {
-                        _tabController.animateTo(_currentTab + 1);
-                        setState(() => _currentTab++);
-                      } else {
-                        _createAdmin();
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                  // Next/Create Button
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF6366F1),
+                            Color(0xFF8B5CF6),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6366F1).withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _isLoading
+                              ? null
+                              : () {
+                                  if (_currentTab < 2) {
+                                    _tabController.animateTo(_currentTab + 1);
+                                    setState(() => _currentTab++);
+                                  } else {
+                                    _createAdmin();
+                                  }
+                                },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: _isLoading
+                                ? const Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
+                                      ),
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (_currentTab == 2)
+                                        const Icon(
+                                          Icons.check_circle_outline_rounded,
+                                          color: Colors.white,
+                                          size: 22,
+                                        ),
+                                      if (_currentTab == 2)
+                                        const SizedBox(width: 8),
+                                      Text(
+                                        _currentTab < 2
+                                            ? 'Continue'
+                                            : 'Create Admin',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      if (_currentTab < 2)
+                                        const SizedBox(width: 8),
+                                      if (_currentTab < 2)
+                                        const Icon(
+                                          Icons.arrow_forward_rounded,
+                                          color: Colors.white,
+                                          size: 22,
+                                        ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(_currentTab < 2 ? 'Next' : 'Create Admin'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
