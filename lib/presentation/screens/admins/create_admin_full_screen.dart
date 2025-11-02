@@ -119,22 +119,40 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
     if (mounted) {
       if (success) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Admin created successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // ?? Success Animation!
+        await _showSuccessAnimation();
+        if (mounted) {
+          Navigator.pop(context);
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(adminProvider.errorMessage ?? 'Error creating admin'),
+            content: Row(
+              children: [
+                const Icon(Icons.error_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(adminProvider.errorMessage ?? 'Error creating admin'),
+                ),
+              ],
+            ),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
     }
+  }
+
+  Future<void> _showSuccessAnimation() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const _SuccessDialog(),
+    );
   }
 
   @override
