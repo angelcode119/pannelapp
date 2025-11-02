@@ -15,7 +15,7 @@ class AdminRepository {
     String? appType,
   }) async {
     try {
-      final queryParams = {
+      final queryParams = <String, dynamic>{
         'skip': skip,
         'limit': limit,
       };
