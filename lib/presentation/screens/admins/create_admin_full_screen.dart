@@ -823,7 +823,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             controller: _botNameControllers[index],
             style: const TextStyle(fontSize: 11),
             decoration: InputDecoration(
-              labelText: 'Name',
+              labelText: 'Name *',
               labelStyle: const TextStyle(fontSize: 10),
               prefixIcon: const Icon(Icons.label_outline_rounded, size: 14),
               hintText: 'bot_${index + 1}',
@@ -857,6 +857,12 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                 vertical: 8,
               ),
             ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Name is required';
+              }
+              return null;
+            },
           ),
 
           const SizedBox(height: 6),
@@ -866,7 +872,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             controller: _botTokenControllers[index],
             style: const TextStyle(fontSize: 11),
             decoration: InputDecoration(
-              labelText: 'Token',
+              labelText: 'Token *',
               labelStyle: const TextStyle(fontSize: 10),
               prefixIcon: const Icon(Icons.key_outlined, size: 14),
               hintText: '123:AAA...',
@@ -900,6 +906,12 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                 vertical: 8,
               ),
             ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Token is required';
+              }
+              return null;
+            },
           ),
 
           const SizedBox(height: 6),
@@ -909,7 +921,7 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             controller: _botChatIdControllers[index],
             style: const TextStyle(fontSize: 11),
             decoration: InputDecoration(
-              labelText: 'Chat ID',
+              labelText: 'Chat ID *',
               labelStyle: const TextStyle(fontSize: 10),
               prefixIcon: const Icon(Icons.tag_outlined, size: 14),
               hintText: '-100123...',
@@ -943,6 +955,12 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                 vertical: 8,
               ),
             ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Chat ID is required';
+              }
+              return null;
+            },
           ),
         ],
       ),
