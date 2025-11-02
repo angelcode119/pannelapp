@@ -399,16 +399,40 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             },
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Role
           DropdownButtonFormField<String>(
             value: _selectedRole,
             decoration: InputDecoration(
               labelText: 'Role *',
-              prefixIcon: const Icon(Icons.admin_panel_settings),
+              prefixIcon: const Icon(Icons.admin_panel_settings_outlined, size: 20),
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.05) 
+                  : Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
               ),
             ),
             items: const [
@@ -586,10 +610,32 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
                   controller: _telegram2faChatIdController,
                   decoration: InputDecoration(
                     labelText: 'Telegram Chat ID',
-                    prefixIcon: const Icon(Icons.telegram),
+                    prefixIcon: const Icon(Icons.telegram_outlined, size: 20),
                     hintText: 'e.g., -1001234567890',
+                    filled: true,
+                    fillColor: isDark 
+                        ? Colors.white.withOpacity(0.03) 
+                        : Colors.white,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.blue.withOpacity(0.2),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Colors.blue,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
                     ),
                   ),
                 ),
@@ -684,44 +730,116 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             controller: _botNameControllers[index],
             decoration: InputDecoration(
               labelText: 'Bot Name',
-              prefixIcon: const Icon(Icons.label, size: 20),
+              prefixIcon: const Icon(Icons.label_outline_rounded, size: 18),
               hintText: 'e.g., my_device_bot',
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.02) 
+                  : Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.08) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 1.5,
+                ),
               ),
               isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
           // Bot Token
           TextFormField(
             controller: _botTokenControllers[index],
             decoration: InputDecoration(
               labelText: 'Bot Token',
-              prefixIcon: const Icon(Icons.key, size: 20),
+              prefixIcon: const Icon(Icons.key_outlined, size: 18),
               hintText: '1234567890:AAA...',
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.02) 
+                  : Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.08) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 1.5,
+                ),
               ),
               isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
           // Chat ID
           TextFormField(
             controller: _botChatIdControllers[index],
             decoration: InputDecoration(
               labelText: 'Chat ID',
-              prefixIcon: const Icon(Icons.tag, size: 20),
+              prefixIcon: const Icon(Icons.tag_outlined, size: 18),
               hintText: '-1001234567890',
+              filled: true,
+              fillColor: isDark 
+                  ? Colors.white.withOpacity(0.02) 
+                  : Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.08) 
+                      : Colors.grey.shade200,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: Color(0xFF6366F1),
+                  width: 1.5,
+                ),
               ),
               isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
         ],
