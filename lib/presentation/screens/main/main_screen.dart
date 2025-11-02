@@ -1462,3 +1462,89 @@ class _AdminFilterDropdown extends StatelessWidget {
     }
   }
 }
+
+// ?? Mini Filter Chip - ??? ? ?????!
+class _MiniFilterChip extends StatelessWidget {
+  final String label;
+  final int? count;
+  final IconData? icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _MiniFilterChip({
+    required this.label,
+    this.count,
+    this.icon,
+    this.isSelected = false,
+    required this.onTap,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(colors: [color, color.withOpacity(0.8)])
+              : null,
+          color: isSelected
+              ? null
+              : (isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: isSelected
+                ? color
+                : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 12, color: isSelected ? Colors.white : color),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.black87),
+              ),
+            ),
+            if (count != null && count! > 0) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withOpacity(0.25)
+                      : color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? Colors.white : color,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
