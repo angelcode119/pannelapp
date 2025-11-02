@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/api_service.dart';
+import 'data/services/fcm_service.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/device_provider.dart';
 import 'presentation/providers/theme_provider.dart';
@@ -22,6 +23,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   debugPrint('📩 Background message: ${message.messageId}');
+  debugPrint('📩 Data: ${message.data}');
 }
 
 void main() async {
@@ -43,21 +45,11 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp();
   
-  // Setup Firebase Messaging
+  // Setup Firebase Messaging background handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   
-  // Request notification permission
-  final messaging = FirebaseMessaging.instance;
-  await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-    provisional: false,
-  );
-  
-  // Get FCM token
-  final token = await messaging.getToken();
-  debugPrint('🔔 FCM Token: $token');
+  // Initialize FCM Service (handles everything!)
+  await FCMService().initialize();
 
   runApp(const MyApp());
 }

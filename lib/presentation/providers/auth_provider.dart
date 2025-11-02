@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/admin.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../../data/services/fcm_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum AuthStatus {
@@ -135,10 +136,15 @@ class AuthProvider extends ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
+      // ?? Get FCM token
+      final fcmToken = await FCMService().getToken();
+      debugPrint('?? Sending FCM token with 2FA: $fcmToken');
+
       final admin = await _authRepository.verify2FA(
         _pendingUsername!,
         otpCode,
         _tempToken!,
+        fcmToken: fcmToken,
       );
 
       if (admin != null) {
