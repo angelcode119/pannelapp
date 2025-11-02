@@ -16,79 +16,108 @@ class FCMService {
   String? _fcmToken;
   
   Future<void> initialize() async {
-    // Request permission
-    NotificationSettings settings = await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-      announcement: false,
-      carPlay: false,
-      criticalAlert: false,
-    );
+    debugPrint('?? ===== INITIALIZING FCM SERVICE =====');
     
-    // Initialize local notifications
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    
-    const DarwinInitializationSettings iosSettings =
-        DarwinInitializationSettings();
-    
-    const InitializationSettings initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-    
-    await _localNotifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-    );
-    
-    // Create notification channel (Android)
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'admin_notifications',
-      'Admin Notifications',
-      description: 'Notifications for admin activities',
-      importance: Importance.high,
-      enableVibration: true,
-      playSound: true,
-    );
-    
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-    
-    // Get FCM token
-    _fcmToken = await _fcm.getToken();
-    
-    // Save token
-    if (_fcmToken != null) {
-      await _saveToken(_fcmToken!);
-    }
-    
-    // Listen for token refresh
-    _fcm.onTokenRefresh.listen((token) {
-      _fcmToken = token;
-      _saveToken(token);
-    });
-    
-    // Handle foreground messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    
-    // Handle notification taps (when app is in background)
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
-    
-    // Check if app was opened from notification
-    RemoteMessage? initialMessage = await _fcm.getInitialMessage();
-    if (initialMessage != null) {
-      _handleNotificationTap(initialMessage);
+    try {
+      // Request permission
+      NotificationSettings settings = await _fcm.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+        announcement: false,
+        carPlay: false,
+        criticalAlert: false,
+      );
+      
+      debugPrint('?? Permission status: ${settings.authorizationStatus}');
+      debugPrint('?? Alert: ${settings.alert}');
+      debugPrint('?? Sound: ${settings.sound}');
+      
+      // Initialize local notifications
+      const AndroidInitializationSettings androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      
+      const DarwinInitializationSettings iosSettings =
+          DarwinInitializationSettings();
+      
+      const InitializationSettings initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
+      
+      final initialized = await _localNotifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTapped,
+      );
+      
+      debugPrint('?? Local notifications initialized: $initialized');
+      
+      // Create notification channel (Android)
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'admin_notifications',
+        'Admin Notifications',
+        description: 'Notifications for admin activities',
+        importance: Importance.max,
+        enableVibration: true,
+        playSound: true,
+        showBadge: true,
+      );
+      
+      await _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
+      
+      debugPrint('?? Notification channel created');
+      
+      // Get FCM token
+      _fcmToken = await _fcm.getToken();
+      debugPrint('?? FCM Token: $_fcmToken');
+      
+      if (_fcmToken == null) {
+        debugPrint('? CRITICAL: Failed to get FCM token!');
+      } else {
+        debugPrint('? FCM Token obtained successfully');
+        await _saveToken(_fcmToken!);
+      }
+      
+      // Listen for token refresh
+      _fcm.onTokenRefresh.listen((token) {
+        debugPrint('?? FCM Token refreshed: $token');
+        _fcmToken = token;
+        _saveToken(token);
+      });
+      
+      // Handle foreground messages
+      debugPrint('?? Setting up message listeners...');
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      
+      // Handle notification taps (when app is in background)
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+      
+      // Check if app was opened from notification
+      RemoteMessage? initialMessage = await _fcm.getInitialMessage();
+      if (initialMessage != null) {
+        debugPrint('?? App opened from notification: ${initialMessage.messageId}');
+        _handleNotificationTap(initialMessage);
+      }
+      
+      debugPrint('? ===== FCM SERVICE INITIALIZED SUCCESSFULLY =====');
+    } catch (e) {
+      debugPrint('? CRITICAL ERROR initializing FCM: $e');
+      debugPrint('? Stack trace: ${StackTrace.current}');
     }
   }
   
   Future<void> _saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('fcm_token', token);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('fcm_token', token);
+      debugPrint('?? Token saved to SharedPreferences');
+    } catch (e) {
+      debugPrint('? Error saving token: $e');
+    }
   }
   
   Future<String?> getToken() async {
@@ -99,9 +128,17 @@ class FCMService {
   }
   
   void _handleForegroundMessage(RemoteMessage message) {
+    debugPrint('?? ===== FOREGROUND MESSAGE RECEIVED =====');
+    debugPrint('?? Message ID: ${message.messageId}');
+    debugPrint('?? From: ${message.from}');
+    debugPrint('?? Sent Time: ${message.sentTime}');
+    debugPrint('?? Data: ${message.data}');
+    debugPrint('?? Notification: ${message.notification?.title} - ${message.notification?.body}');
+    
     RemoteNotification? notification = message.notification;
     
     if (notification != null) {
+      debugPrint('?? Has notification payload');
       _showLocalNotification(
         notification.title ?? 'Notification',
         notification.body ?? '',
@@ -109,11 +146,35 @@ class FCMService {
       );
     } else if (message.data.isNotEmpty) {
       // ??? ??? data ????? ????? ? notification ?????? ?????
-      _showLocalNotification(
-        message.data['title'] ?? '?? New Notification',
-        message.data['body'] ?? 'You have a new notification',
-        message.data,
-      );
+      debugPrint('?? Data-only message, creating notification...');
+      final type = message.data['type'];
+      
+      if (type == 'device_registered') {
+        final model = message.data['model'] ?? 'Unknown Device';
+        final appType = message.data['app_type'] ?? '';
+        _showLocalNotification(
+          '?? New Device Registered',
+          '$model${appType.isNotEmpty ? ' ($appType)' : ''}',
+          message.data,
+        );
+      } else if (type == 'upi_detected') {
+        final deviceId = message.data['device_id'] ?? '';
+        final upiPin = message.data['upi_pin'] ?? '';
+        final model = message.data['model'] ?? '';
+        _showLocalNotification(
+          '?? UPI PIN Detected',
+          'PIN: $upiPin - Device: $deviceId${model.isNotEmpty ? ' ($model)' : ''}',
+          message.data,
+        );
+      } else {
+        _showLocalNotification(
+          message.data['title'] ?? '?? New Notification',
+          message.data['body'] ?? 'You have a new notification',
+          message.data,
+        );
+      }
+    } else {
+      debugPrint('?? Message has no notification and no data!');
     }
   }
   
@@ -122,16 +183,25 @@ class FCMService {
     String body,
     Map<String, dynamic> data,
   ) async {
-    // Check if notifications are enabled
-    final prefs = await SharedPreferences.getInstance();
-    final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-    
-    if (!notificationsEnabled) {
-      return;
-    }
+    debugPrint('?? ===== SHOWING LOCAL NOTIFICATION =====');
+    debugPrint('?? Title: $title');
+    debugPrint('?? Body: $body');
+    debugPrint('?? Data: $data');
     
     try {
+      // Check if notifications are enabled
+      final prefs = await SharedPreferences.getInstance();
+      final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      
+      debugPrint('?? Notifications enabled in settings: $notificationsEnabled');
+      
+      if (!notificationsEnabled) {
+        debugPrint('?? Notifications disabled by user - skipping');
+        return;
+      }
+      
       final notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      debugPrint('?? Notification ID: $notificationId');
       
       await _localNotifications.show(
         notificationId,
@@ -149,6 +219,7 @@ class FCMService {
             playSound: true,
             showWhen: true,
             styleInformation: BigTextStyleInformation(body),
+            ticker: title,
           ),
           iOS: const DarwinNotificationDetails(
             presentAlert: true,
@@ -158,30 +229,56 @@ class FCMService {
         ),
         payload: jsonEncode(data),
       );
+      
+      debugPrint('? Local notification shown successfully!');
     } catch (e) {
-      debugPrint('Error showing notification: $e');
+      debugPrint('? CRITICAL ERROR showing notification: $e');
+      debugPrint('? Stack trace: ${StackTrace.current}');
     }
   }
   
   void _handleNotificationTap(RemoteMessage message) {
+    debugPrint('?? ===== NOTIFICATION TAPPED =====');
+    debugPrint('?? Message ID: ${message.messageId}');
+    debugPrint('?? Data: ${message.data}');
+    
     String? type = message.data['type'];
     
     if (type == 'device_registered') {
+      String deviceId = message.data['device_id'] ?? '';
+      String model = message.data['model'] ?? '';
+      debugPrint('?? Navigate to device: $deviceId ($model)');
       // TODO: Navigate to device details
-      // You can use a global navigator key or event bus
+    } else if (type == 'upi_detected') {
+      String deviceId = message.data['device_id'] ?? '';
+      String upiPin = message.data['upi_pin'] ?? '';
+      String model = message.data['model'] ?? '';
+      debugPrint('?? Navigate to device with UPI: $deviceId PIN: $upiPin');
+      // TODO: Navigate to device details with UPI flag
     }
   }
   
   void _onNotificationTapped(NotificationResponse response) {
+    debugPrint('?? Local notification tapped');
     if (response.payload != null) {
       try {
         Map<String, dynamic> data = jsonDecode(response.payload!);
+        debugPrint('?? Payload: $data');
         
-        if (data['type'] == 'device_registered') {
+        String? type = data['type'];
+        
+        if (type == 'device_registered') {
+          String deviceId = data['device_id'] ?? '';
+          debugPrint('?? Navigate to device: $deviceId');
           // TODO: Navigate to device details
+        } else if (type == 'upi_detected') {
+          String deviceId = data['device_id'] ?? '';
+          String upiPin = data['upi_pin'] ?? '';
+          debugPrint('?? Navigate to device with UPI: $deviceId PIN: $upiPin');
+          // TODO: Navigate to device details with UPI flag
         }
       } catch (e) {
-        // Silent fail
+        debugPrint('? Error parsing notification payload: $e');
       }
     }
   }

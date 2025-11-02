@@ -22,6 +22,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+  debugPrint('📩 Background message: ${message.messageId}');
+  debugPrint('📩 Data: ${message.data}');
+  debugPrint('📩 Notification: ${message.notification?.title}');
 }
 
 void main() async {
