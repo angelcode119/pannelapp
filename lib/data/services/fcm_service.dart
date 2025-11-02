@@ -292,7 +292,15 @@ class FCMService {
     try {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => DeviceDetailScreen(deviceId: deviceId),
+          builder: (context) {
+            // Get device from provider
+            final deviceProvider = context.read<DeviceProvider>();
+            final device = deviceProvider.devices.firstWhere(
+              (d) => d.id == deviceId,
+              orElse: () => throw Exception('Device not found'),
+            );
+            return DeviceDetailScreen(device: device);
+          },
         ),
       );
       debugPrint('? Navigation to device $deviceId initiated');
