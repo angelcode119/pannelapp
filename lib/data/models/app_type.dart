@@ -35,7 +35,21 @@ class AppTypeInfo {
   String get summary => '$displayName ($count)';
   
   // App type specific styling
-  String get color {
+  int get colorValue {
+    switch (appType.toLowerCase()) {
+      case 'sexychat':
+        return 0xFFFF6B9D; // Pink
+      case 'mparivahan':
+      case 'mp':
+        return 0xFF4CAF50; // Green
+      case 'sexyhub':
+        return 0xFF9C27B0; // Purple
+      default:
+        return 0xFF2196F3; // Blue
+    }
+  }
+  
+  String get colorHex {
     switch (appType.toLowerCase()) {
       case 'sexychat':
         return '#FF6B9D'; // Pink
