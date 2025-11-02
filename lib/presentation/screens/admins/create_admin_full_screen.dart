@@ -182,18 +182,64 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Administrator Information',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+          // ?????????? Header ??
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Enter the basic information for the new administrator',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey,
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.person_add_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Basic Information',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Let\'s start with the basics',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -401,59 +447,58 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
           const SizedBox(height: 12),
 
-          // Role
-          DropdownButtonFormField<String>(
-            value: _selectedRole,
-            decoration: InputDecoration(
-              labelText: 'Role *',
-              prefixIcon: const Icon(Icons.admin_panel_settings_outlined, size: 20),
-              filled: true,
-              fillColor: isDark 
-                  ? Colors.white.withOpacity(0.05) 
-                  : Colors.grey.shade50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: isDark 
-                      ? Colors.white.withOpacity(0.1) 
-                      : Colors.grey.shade200,
+          // Role - ?? ???????? ????? ??
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Select Role *',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: Color(0xFF6366F1),
-                  width: 2,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-            ),
-            items: const [
-              DropdownMenuItem(
-                value: 'super_admin',
-                child: Text('Super Admin'),
-              ),
-              DropdownMenuItem(
-                value: 'admin',
-                child: Text('Admin'),
-              ),
-              DropdownMenuItem(
-                value: 'viewer',
-                child: Text('Viewer'),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _RoleCard(
+                      role: 'super_admin',
+                      title: 'Super Admin',
+                      icon: Icons.stars_rounded,
+                      color: const Color(0xFFEF4444),
+                      isSelected: _selectedRole == 'super_admin',
+                      onTap: () => setState(() => _selectedRole = 'super_admin'),
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _RoleCard(
+                      role: 'admin',
+                      title: 'Admin',
+                      icon: Icons.verified_user_rounded,
+                      color: const Color(0xFF6366F1),
+                      isSelected: _selectedRole == 'admin',
+                      onTap: () => setState(() => _selectedRole = 'admin'),
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _RoleCard(
+                      role: 'viewer',
+                      title: 'Viewer',
+                      icon: Icons.visibility_rounded,
+                      color: const Color(0xFF10B981),
+                      isSelected: _selectedRole == 'viewer',
+                      onTap: () => setState(() => _selectedRole = 'viewer'),
+                      isDark: isDark,
+                    ),
+                  ),
+                ],
               ),
             ],
-            onChanged: (value) {
-              setState(() {
-                _selectedRole = value!;
-              });
-            },
           ),
           
           const SizedBox(height: 24),
@@ -572,6 +617,67 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ?????????? Header ??
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0088cc), Color(0xFF00BFFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0088cc).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.telegram_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Telegram Configuration',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Setup 2FA & notification bots',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          
           // 2FA Section
           Container(
             padding: const EdgeInsets.all(16),
@@ -589,18 +695,18 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
               children: [
                 Row(
                   children: const [
-                    Icon(Icons.security, color: Colors.blue),
+                    Icon(Icons.security_rounded, color: Colors.blue, size: 20),
                     SizedBox(width: 8),
                     Text(
                       '2FA Bot (Shared)',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 15,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 const Text(
                   'Telegram Chat ID for receiving OTP codes',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -643,19 +749,45 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Notification Bots
-          Text(
-            'Notification Bots (5 Required)',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+          // Notification Bots ?? Header ?????
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Configure 5 Telegram bots for different notifications',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+                child: const Icon(
+                  Icons.notifications_active_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Notification Bots',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      'Configure 5 bots for notifications',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
@@ -853,16 +985,64 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Review Information',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+          // ?????????? Header ??
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Please review all information before creating',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.preview_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Review & Confirm',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Everything looks good?',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -1089,3 +1269,90 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
     );
   }
 }
+
+// ?? ?????????? Role Card
+class _RoleCard extends StatelessWidget {
+  final String role;
+  final String title;
+  final IconData icon;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isDark;
+
+  const _RoleCard({
+    required this.role,
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [color, color.withOpacity(0.8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected
+              ? null
+              : (isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.grey.shade100),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? color
+                : (isDark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.grey.shade300),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : color,
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white : Colors.black87),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
