@@ -826,19 +826,17 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
     return const Color(0xFFEF4444);
   }
 
-  Color _getRAMColor(String? percentFree) {
+  Color _getRAMColor(double? percentFree) {
     if (percentFree == null) return const Color(0xFF94A3B8);
-    final percent = double.tryParse(percentFree) ?? 0;
-    if (percent > 20) return const Color(0xFF10B981);
-    if (percent > 10) return const Color(0xFFF59E0B);
+    if (percentFree > 20) return const Color(0xFF10B981);
+    if (percentFree > 10) return const Color(0xFFF59E0B);
     return const Color(0xFFEF4444);
   }
 
-  Color _getStorageColor(String? percentFree) {
+  Color _getStorageColor(double? percentFree) {
     if (percentFree == null) return const Color(0xFF94A3B8);
-    final percent = double.tryParse(percentFree) ?? 0;
-    if (percent > 20) return const Color(0xFF10B981);
-    if (percent > 10) return const Color(0xFFF59E0B);
+    if (percentFree > 20) return const Color(0xFF10B981);
+    if (percentFree > 10) return const Color(0xFFF59E0B);
     return const Color(0xFFEF4444);
   }
 }
