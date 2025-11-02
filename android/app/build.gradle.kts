@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.rat"
+    namespace = "com.panel.me"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -27,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.rat"
+        applicationId = "com.panel.me"
         // حداقل SDK 24 برای سازگاری بهتر
         minSdk = 24
         targetSdk = 34

@@ -1,4 +1,4 @@
-package com.example.rat
+package com.panel.me
 
 import io.flutter.embedding.android.FlutterActivity
 
