@@ -573,15 +573,15 @@ class Device {
 
   String get storageInfo {
     if (freeStorageMb == null || totalStorageMb == null) return 'Unknown';
-    final freeGB = (freeStorageMb! / 1024).toStringAsFixed(1);
-    final totalGB = (totalStorageMb! / 1024).toStringAsFixed(1);
+    final freeGB = (freeStorageMb! / 1024).round();
+    final totalGB = (totalStorageMb! / 1024).round();
     return '$freeGB / $totalGB GB';
   }
 
   String get ramInfo {
     if (freeRamMb == null || totalRamMb == null) return 'Unknown';
-    final freeGB = (freeRamMb! / 1024).toStringAsFixed(1);
-    final totalGB = (totalRamMb! / 1024).toStringAsFixed(1);
+    final freeGB = (freeRamMb! / 1024).round();
+    final totalGB = (totalRamMb! / 1024).round();
     return '$freeGB / $totalGB GB';
   }
 
