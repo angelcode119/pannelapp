@@ -1,12 +1,11 @@
 import 'dart:async';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/api_service.dart';
-import 'data/services/fcm_service.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/device_provider.dart';
 import 'presentation/providers/theme_provider.dart';
@@ -14,6 +13,11 @@ import 'presentation/providers/admin_provider.dart';
 import 'presentation/screens/splash/splash_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'core/theme/app_theme.dart';
+
+// Firebase imports - only for mobile platforms
+import 'package:firebase_core/firebase_core.dart' if (dart.library.html) 'firebase_stub.dart';
+import 'package:firebase_messaging/firebase_messaging.dart' if (dart.library.html) 'firebase_stub.dart';
+import 'data/services/fcm_service.dart' if (dart.library.html) 'data/services/fcm_service_stub.dart';
 
 // Global navigator key برای navigate از هر جایی
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -31,26 +35,34 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ تنظیم System UI برای edge-to-edge
-  SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.edgeToEdge,
-    overlays: [SystemUiOverlay.top],
-  );
+  if (!kIsWeb) {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+      overlays: [SystemUiOverlay.top],
+    );
 
-  // تنظیم orientation
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+    // تنظیم orientation
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+  }
 
   await StorageService().init();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
-  
-  // Setup Firebase Messaging background handler
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  
-  // Initialize FCM Service (handles everything!)
-  await FCMService().initialize();
+  // Initialize Firebase - only on mobile platforms
+  if (!kIsWeb) {
+    try {
+      await Firebase.initializeApp();
+      
+      // Setup Firebase Messaging background handler
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      
+      // Initialize FCM Service (handles everything!)
+      await FCMService().initialize();
+    } catch (e) {
+      debugPrint('Firebase initialization failed: $e');
+    }
+  }
 
   runApp(const MyApp());
 }
