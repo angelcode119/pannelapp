@@ -1473,24 +1473,25 @@ class _AdminFilterDropdown extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          gradient: deviceProvider.adminFilter != null
+          // فقط وقتی یه ادمین خاص انتخاب شده (نه null و نه "all")، قرمز بشه
+          gradient: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
               ? const LinearGradient(
                   colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: deviceProvider.adminFilter == null
+          color: (deviceProvider.adminFilter == null || deviceProvider.adminFilter == 'all')
               ? (isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100)
               : null,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: deviceProvider.adminFilter != null
+            color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
                 ? const Color(0xFFEF4444)
                 : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300),
             width: 0.5,
           ),
-          boxShadow: deviceProvider.adminFilter != null
+          boxShadow: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
               ? [
                   BoxShadow(
                     color: const Color(0xFFEF4444).withOpacity(0.3),
@@ -1506,7 +1507,7 @@ class _AdminFilterDropdown extends StatelessWidget {
             Icon(
               Icons.admin_panel_settings_rounded,
               size: 12,
-              color: deviceProvider.adminFilter != null
+              color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
                   ? Colors.white
                   : const Color(0xFFEF4444),
             ),
@@ -1514,13 +1515,15 @@ class _AdminFilterDropdown extends StatelessWidget {
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 100),
               child: Text(
-                deviceProvider.adminFilter != null 
-                    ? deviceProvider.adminFilter!
-                    : t('allAdmins'),
+                deviceProvider.adminFilter == null 
+                    ? t('myDevices')
+                    : deviceProvider.adminFilter == 'all'
+                        ? t('allAdmins')
+                        : deviceProvider.adminFilter!,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: deviceProvider.adminFilter != null
+                  color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
                       ? Colors.white
                       : (isDark ? Colors.white70 : Colors.black87),
                 ),
@@ -1531,7 +1534,7 @@ class _AdminFilterDropdown extends StatelessWidget {
             Icon(
               Icons.arrow_drop_down_rounded,
               size: 14,
-              color: deviceProvider.adminFilter != null
+              color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
                   ? Colors.white
                   : (isDark ? Colors.white60 : Colors.black54),
             ),
@@ -1546,7 +1549,7 @@ class _AdminFilterDropdown extends StatelessWidget {
           // My Devices Option (Default - shows current admin's devices)
           if (currentAdmin != null)
             PopupMenuItem<String?>(
-              value: currentAdmin.username,
+              value: null,  // null means "my devices"
               height: 40,
               child: Row(
                 children: [
@@ -1601,9 +1604,9 @@ class _AdminFilterDropdown extends StatelessWidget {
             ),
           const PopupMenuDivider(height: 4),
           
-          // All Admins' Devices Option (value must be empty string, not null)
+          // All Admins' Devices Option
           PopupMenuItem<String?>(
-            value: '',  // Changed from null to empty string
+            value: 'all',  // API expects "all" for all admins
             height: 36,
             child: Row(
               children: [
@@ -1690,8 +1693,8 @@ class _AdminFilterDropdown extends StatelessWidget {
         ];
       },
       onSelected: (value) {
-        // اگر '' انتخاب شد (All Admins)، null بفرست
-        deviceProvider.setAdminFilter(value == '' ? null : value);
+        // مستقیم value رو بفرست (null, "all", یا username)
+        deviceProvider.setAdminFilter(value);
       },
     );
   }
