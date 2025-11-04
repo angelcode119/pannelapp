@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../providers/auth_provider.dart';
 import '../../providers/admin_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../auth/login_screen.dart';
 import 'change_password_dialog.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -68,6 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final adminProvider = context.watch<AdminProvider>();
+    final t = context.watch<LocaleProvider>().t;
     final admin = authProvider.currentAdmin;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
