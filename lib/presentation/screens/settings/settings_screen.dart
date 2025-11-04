@@ -343,16 +343,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showThemeDialog(BuildContext context) {
     final themeProvider = context.read<ThemeProvider>();
+    final t = context.read<LocaleProvider>().t;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(t('chooseLanguage')),
+        title: Text(t('chooseTheme')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<ThemeMode>(
-              title: const Text('Light'),
+              title: Text(t('lightMode')),
               value: ThemeMode.light,
               groupValue: themeProvider.themeMode,
               onChanged: (value) {
@@ -361,7 +362,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             RadioListTile<ThemeMode>(
-              title: const Text('Dark'),
+              title: Text(t('darkMode')),
               value: ThemeMode.dark,
               groupValue: themeProvider.themeMode,
               onChanged: (value) {
@@ -370,7 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             RadioListTile<ThemeMode>(
-              title: const Text('Auto (System)'),
+              title: Text(t('systemDefault')),
               value: ThemeMode.system,
               groupValue: themeProvider.themeMode,
               onChanged: (value) {
