@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,21 +13,23 @@ import 'presentation/screens/splash/splash_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'core/theme/app_theme.dart';
 
-// Firebase imports - only for mobile platforms
-import 'package:firebase_core/firebase_core.dart' if (dart.library.html) 'firebase_stub.dart';
-import 'package:firebase_messaging/firebase_messaging.dart' if (dart.library.html) 'firebase_stub.dart';
-import 'data/services/fcm_service.dart' if (dart.library.html) 'data/services/fcm_service_stub.dart';
+// Conditionally import Firebase only for non-web platforms
+import 'package:firebase_core/firebase_core.dart'
+    if (dart.library.html) 'core/utils/firebase_stub.dart' as firebase_import;
+import 'package:firebase_messaging/firebase_messaging.dart'
+    if (dart.library.html) 'core/utils/firebase_stub.dart' as messaging_import;
+import 'data/services/fcm_service.dart'
+    if (dart.library.html) 'core/utils/fcm_service_stub.dart' as fcm_import;
 
 // Global navigator key برای navigate از هر جایی
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// Handle background messages
+// Handle background messages - only for mobile
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  debugPrint('📩 Background message: ${message.messageId}');
-  debugPrint('📩 Data: ${message.data}');
-  debugPrint('📩 Notification: ${message.notification?.title}');
+Future<void> _firebaseMessagingBackgroundHandler(dynamic message) async {
+  if (!kIsWeb) {
+    await firebase_import.Firebase.initializeApp();
+  }
 }
 
 void main() async {
@@ -52,13 +53,13 @@ void main() async {
   // Initialize Firebase - only on mobile platforms
   if (!kIsWeb) {
     try {
-      await Firebase.initializeApp();
+      await firebase_import.Firebase.initializeApp();
       
       // Setup Firebase Messaging background handler
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      messaging_import.FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
       
       // Initialize FCM Service (handles everything!)
-      await FCMService().initialize();
+      await fcm_import.FCMService().initialize();
     } catch (e) {
       debugPrint('Firebase initialization failed: $e');
     }
