@@ -5,6 +5,7 @@ import '../../providers/device_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/common/stats_card.dart';
 import '../../../data/models/stats.dart';
+import '../../../data/models/device.dart';
 import '../../../data/services/export_service.dart';
 import '../../widgets/common/device_card.dart';
 import '../../widgets/common/empty_state.dart';
