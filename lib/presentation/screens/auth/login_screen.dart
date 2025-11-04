@@ -69,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     final authProvider = context.read<AuthProvider>();
+    final t = context.read<LocaleProvider>().t;
     final result = await authProvider.login(
       _usernameController.text.trim(),
       _passwordController.text,
