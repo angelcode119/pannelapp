@@ -1599,9 +1599,9 @@ class _AdminFilterDropdown extends StatelessWidget {
             ),
           const PopupMenuDivider(height: 4),
           
-          // All Admins' Devices Option
+          // All Admins' Devices Option (value must be empty string, not null)
           PopupMenuItem<String?>(
-            value: null,
+            value: '',  // Changed from null to empty string
             height: 36,
             child: Row(
               children: [
@@ -1688,7 +1688,8 @@ class _AdminFilterDropdown extends StatelessWidget {
         ];
       },
       onSelected: (value) {
-        deviceProvider.setAdminFilter(value);
+        // اگر '' انتخاب شد (All Admins)، null بفرست
+        deviceProvider.setAdminFilter(value == '' ? null : value);
       },
     );
   }
