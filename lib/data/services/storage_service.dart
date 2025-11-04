@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +9,12 @@ class StorageService {
   factory StorageService() => _instance;
   StorageService._internal();
 
-  final _secureStorage = const FlutterSecureStorage();
+  final _secureStorage = const FlutterSecureStorage(
+    webOptions: WebOptions(
+      dbName: 'PanelDB',
+      publicKey: 'PanelPublicKey',
+    ),
+  );
   SharedPreferences? _prefs;
 
   Future<void> init() async {
@@ -16,23 +22,48 @@ class StorageService {
   }
 
   Future<void> saveToken(String token) async {
-    await _secureStorage.write(key: 'access_token', value: token);
+    if (kIsWeb) {
+      // ??? Web ?? SharedPreferences ??????? ??
+      await _prefs?.setString('access_token', token);
+    } else {
+      // ??? ?????? ?? SecureStorage ??????? ??
+      await _secureStorage.write(key: 'access_token', value: token);
+    }
   }
 
   Future<String?> getToken() async {
-    return await _secureStorage.read(key: 'access_token');
+    if (kIsWeb) {
+      return _prefs?.getString('access_token');
+    } else {
+      return await _secureStorage.read(key: 'access_token');
+    }
   }
 
   Future<void> deleteToken() async {
-    await _secureStorage.delete(key: 'access_token');
+    if (kIsWeb) {
+      await _prefs?.remove('access_token');
+    } else {
+      await _secureStorage.delete(key: 'access_token');
+    }
   }
 
   Future<void> saveAdminInfo(Map<String, dynamic> admin) async {
-    await _secureStorage.write(key: 'admin_info', value: jsonEncode(admin));
+    final data = jsonEncode(admin);
+    if (kIsWeb) {
+      await _prefs?.setString('admin_info', data);
+    } else {
+      await _secureStorage.write(key: 'admin_info', value: data);
+    }
   }
 
   Future<Map<String, dynamic>?> getAdminInfo() async {
-    final data = await _secureStorage.read(key: 'admin_info');
+    String? data;
+    if (kIsWeb) {
+      data = _prefs?.getString('admin_info');
+    } else {
+      data = await _secureStorage.read(key: 'admin_info');
+    }
+    
     if (data != null) {
       return jsonDecode(data);
     }
@@ -40,7 +71,11 @@ class StorageService {
   }
 
   Future<void> deleteAdminInfo() async {
-    await _secureStorage.delete(key: 'admin_info');
+    if (kIsWeb) {
+      await _prefs?.remove('admin_info');
+    } else {
+      await _secureStorage.delete(key: 'admin_info');
+    }
   }
 
   Future<void> setThemeMode(String mode) async {
@@ -60,7 +95,11 @@ class StorageService {
   }
 
   Future<void> clearAll() async {
-    await _secureStorage.deleteAll();
-    await _prefs?.clear();
+    if (kIsWeb) {
+      await _prefs?.clear();
+    } else {
+      await _secureStorage.deleteAll();
+      await _prefs?.clear();
+    }
   }
 }

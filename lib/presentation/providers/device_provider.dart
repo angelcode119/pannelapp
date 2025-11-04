@@ -196,10 +196,18 @@ class DeviceProvider extends ChangeNotifier {
   void setAdminFilter(String? adminUsername) {
     final oldFilter = _adminFilter;
     
-    if (_adminFilter == adminUsername) {
-      _adminFilter = null; // toggle off to "All Devices"
-    } else {
-      _adminFilter = adminUsername;
+    // اگر null (All Devices) انتخاب شده، همیشه به All Devices برو
+    if (adminUsername == null) {
+      _adminFilter = null;
+    }
+    // اگر یک admin انتخاب شده
+    else {
+      // اگر همون admin قبلی بود، toggle off کن (برگرد به All Devices)
+      if (_adminFilter == adminUsername) {
+        _adminFilter = null;
+      } else {
+        _adminFilter = adminUsername;
+      }
     }
     
     // وقتی به "All Devices" تغییر میکنه، app type filter رو پاک کن
