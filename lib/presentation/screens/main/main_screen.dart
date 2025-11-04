@@ -41,7 +41,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _navAnimController.forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DeviceProvider>().fetchDevices();
+      final authProvider = context.read<AuthProvider>();
+      final deviceProvider = context.read<DeviceProvider>();
+      final currentAdmin = authProvider.currentAdmin;
+      
+      // ??? super admin ???? ?? ???? ??? ??? ??? ?????? ??? ???? ?? ???? ???
+      if (currentAdmin != null && currentAdmin.isSuperAdmin) {
+        deviceProvider.setAdminFilter(currentAdmin.username);
+      } else {
+        deviceProvider.fetchDevices();
+      }
     });
   }
 
