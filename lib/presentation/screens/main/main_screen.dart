@@ -1460,7 +1460,9 @@ class _AdminFilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final deviceProvider = context.watch<DeviceProvider>();
     final adminProvider = context.watch<AdminProvider>();
+    final t = context.watch<LocaleProvider>().t;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return PopupMenuButton<String?>(
