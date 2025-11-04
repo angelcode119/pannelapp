@@ -5,6 +5,9 @@ class LocaleProvider extends ChangeNotifier {
   Locale _locale = const Locale('en');
 
   Locale get locale => _locale;
+  
+  bool get isEnglish => _locale.languageCode == 'en';
+  bool get isHindi => _locale.languageCode == 'hi';
 
   LocaleProvider() {
     _loadLocale();

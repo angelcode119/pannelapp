@@ -3,8 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'core/utils/app_localizations.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/api_service.dart';
 import 'presentation/providers/auth_provider.dart';
@@ -155,9 +154,6 @@ class _MyAppState extends State<MyApp> {
             locale: localeProvider.locale,
             localizationsDelegates: const [
               AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [
               Locale('en'), // English

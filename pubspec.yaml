@@ -10,8 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
   
   # State Management
   provider: ^6.1.2
@@ -59,9 +57,9 @@ dependency_overrides:
 
 flutter:
   uses-material-design: true
-  generate: true
   assets:
     - assets/icon/
+    - assets/translations/
 
 flutter_icons:
   android: true

@@ -564,7 +564,7 @@ class _DevicesPageState extends State<_DevicesPage> {
     }
   }
 
-  Future<void> _exportDevices(BuildContext context, List devices) async {
+  Future<void> _exportDevices(BuildContext context, List<Device> devices) async {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
