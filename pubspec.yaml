@@ -59,6 +59,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+    - assets/translations/
 
 flutter_icons:
   android: true
