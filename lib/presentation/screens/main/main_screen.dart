@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../providers/admin_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../widgets/common/stats_card.dart';
 import '../../../data/models/stats.dart';
 import '../../../data/models/device.dart';
@@ -67,6 +68,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final localeProvider = context.watch<LocaleProvider>();
+    final t = localeProvider.t;
     final admin = authProvider.currentAdmin;
     final isWide = MediaQuery.of(context).size.width > 768;
 
@@ -99,7 +102,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               if (isWide)
                 FadeTransition(
                   opacity: _navAnimation,
-                  child: _buildSideNav(context, admin),
+                  child: _buildSideNav(context, admin, t),
                 ),
               Expanded(
                 child: FadeTransition(
@@ -111,11 +114,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      bottomNavigationBar: isWide ? null : _buildBottomNav(context, admin),
+      bottomNavigationBar: isWide ? null : _buildBottomNav(context, admin, t),
     );
   }
 
-  Widget _buildSideNav(BuildContext context, admin) {
+  Widget _buildSideNav(BuildContext context, admin, Function t) {
     return Container(
       width: 208,
       margin: const EdgeInsets.all(9.6),
@@ -164,7 +167,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Admin Panel',
+                  t('appTitle'),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -184,7 +187,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               children: [
                 _NavItem(
                   icon: Icons.devices_rounded,
-                  label: 'Devices',
+                  label: t('devices'),
                   index: 0,
                   selectedIndex: _selectedIndex,
                   onTap: () => setState(() => _selectedIndex = 0),
@@ -192,7 +195,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 const SizedBox(height: 6),
                 _NavItem(
                   icon: Icons.person_rounded,
-                  label: 'Profile',
+                  label: t('profile'),
                   index: 1,
                   selectedIndex: _selectedIndex,
                   onTap: () => setState(() => _selectedIndex = 1),
@@ -200,7 +203,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 const SizedBox(height: 6),
                 _NavItem(
                   icon: Icons.settings_rounded,
-                  label: 'Settings',
+                  label: t('settings'),
                   index: 2,
                   selectedIndex: _selectedIndex,
                   onTap: () => setState(() => _selectedIndex = 2),
@@ -209,7 +212,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   const SizedBox(height: 6),
                   _NavItem(
                     icon: Icons.shield_rounded,
-                    label: 'Management',
+                    label: t('management'),
                     index: 3,
                     selectedIndex: _selectedIndex,
                     onTap: () => setState(() => _selectedIndex = 3),
@@ -237,7 +240,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       Icon(Icons.logout_rounded, color: Colors.red[400], size: 14.4),
                       const SizedBox(width: 8),
                       Text(
-                        'Logout',
+                        t('logout'),
                         style: TextStyle(
                           color: Colors.red[400],
                           fontWeight: FontWeight.w600,
@@ -255,7 +258,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context, admin) {
+  Widget _buildBottomNav(BuildContext context, admin, Function t) {
     return Container(
       margin: const EdgeInsets.all(9.6),
       decoration: BoxDecoration(
@@ -288,26 +291,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           unselectedFontSize: 10,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
           items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.devices_outlined),
-              activeIcon: Icon(Icons.devices_rounded),
-              label: 'Devices',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.devices_outlined),
+              activeIcon: const Icon(Icons.devices_rounded),
+              label: t('devices'),
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person_outline_rounded),
+              activeIcon: const Icon(Icons.person_rounded),
+              label: t('profile'),
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings_rounded),
-              label: 'Settings',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings_outlined),
+              activeIcon: const Icon(Icons.settings_rounded),
+              label: t('settings'),
             ),
             if (admin?.isSuperAdmin == true)
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.shield_outlined),
-                activeIcon: Icon(Icons.shield_rounded),
-                label: 'Admin',
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.shield_outlined),
+                activeIcon: const Icon(Icons.shield_rounded),
+                label: t('management'),
               ),
           ],
         ),
@@ -331,14 +334,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               child: const Icon(Icons.logout_rounded, color: Colors.red, size: 16),
             ),
             const SizedBox(width: 12),
-            const Text('Logout'),
+            Text(context.read<LocaleProvider>().t('logout')),
           ],
         ),
-        content: const Text('Are you sure you want to logout?'),
+        content: Text(context.read<LocaleProvider>().t('logoutConfirm')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
+            child: Text(context.read<LocaleProvider>().t('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -363,8 +366,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 if (context.mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('error in log out'),
+                    SnackBar(
+                      content: Text(context.read<LocaleProvider>().t('error')),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -372,7 +375,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Logout'),
+            child: Text(context.read<LocaleProvider>().t('logout')),
           ),
         ],
       ),

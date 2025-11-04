@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../../core/constants/api_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -15,7 +16,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
-  String _currentLanguage = 'en';
 
   @override
   void initState() {
@@ -27,7 +27,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-      _currentLanguage = prefs.getString('language_code') ?? 'en';
     });
   }
 
@@ -55,15 +54,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
+    final localeProvider = context.watch<LocaleProvider>();
+    final t = localeProvider.t;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(t('settings')),
       ),
       body: ListView(
         children: [
 
-          const _SectionHeader(title: 'Notifications'),
+          _SectionHeader(title: t('notifications')),
 
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 6.4),
@@ -76,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? Theme.of(context).primaryColor 
                     : Colors.grey,
               ),
-              title: const Text('Push Notifications'),
+              title: Text(t('pushNotifications')),
               subtitle: Text(
                 _notificationsEnabled 
                     ? 'Receive notifications from admins' 
@@ -89,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 16),
 
-          const _SectionHeader(title: 'Appearance'),
+          _SectionHeader(title: t('appearance')),
 
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 6.4),
@@ -102,8 +103,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? Icons.dark_mode
                         : Icons.light_mode,
                   ),
-                  title: const Text('Theme'),
-                  subtitle: Text(_getThemeText(themeProvider.themeMode)),
+                  title: Text(t('theme')),
+                  subtitle: Text(_getThemeText(themeProvider.themeMode, t)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showThemeDialog(context),
                 ),
@@ -112,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 SwitchListTile(
                   secondary: const Icon(Icons.brightness_6),
-                  title: const Text('Dark Mode'),
+                  title: Text(t('darkMode')),
                   subtitle: const Text('Quick toggle to dark theme'),
                   value: themeProvider.isDarkMode,
                   onChanged: (value) {
@@ -128,10 +129,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 ListTile(
                   leading: const Icon(Icons.language),
-                  title: const Text('Language'),
-                  subtitle: Text(_getLanguageText(_currentLanguage)),
+                  title: Text(t('language')),
+                  subtitle: Text(_getLanguageText(localeProvider.locale.languageCode)),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showLanguageDialog(context),
+                  onTap: () => _showLanguageDialog(context, localeProvider),
                 ),
               ],
             ),
@@ -139,7 +140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 16),
 
-          const _SectionHeader(title: 'About'),
+          _SectionHeader(title: t('about')),
 
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 6.4),
@@ -147,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.info_outline),
-                  title: const Text('App Version'),
+                  title: Text(t('appVersion')),
                   subtitle: const Text('1.0.0'),
                 ),
 
@@ -155,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 ListTile(
                   leading: const Icon(Icons.dns_outlined),
-                  title: const Text('Server Address'),
+                  title: Text(t('serverAddress')),
                   subtitle: Text("Unknow"),
                   trailing: const Icon(Icons.copy, size: 16),
                   onTap: () {
@@ -248,14 +249,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  String _getThemeText(ThemeMode mode) {
+  String _getThemeText(ThemeMode mode, Function t) {
     switch (mode) {
       case ThemeMode.light:
-        return 'Light';
+        return t('lightMode');
       case ThemeMode.dark:
-        return 'Dark';
+        return t('darkMode');
       case ThemeMode.system:
-        return 'System';
+        return t('systemDefault');
     }
   }
 
@@ -264,13 +265,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case 'en':
         return 'English';
       case 'hi':
-        return 'हिन्दी (Hindi)';
+        return 'हिन्दी';
       default:
         return 'English';
     }
   }
 
-  Future<void> _showLanguageDialog(BuildContext context) async {
+  Future<void> _showLanguageDialog(BuildContext context, LocaleProvider localeProvider) async {
+    final t = localeProvider.t;
+    final currentLang = localeProvider.locale.languageCode;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -287,7 +290,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: const Icon(Icons.language, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
-            const Text('Choose Language'),
+            Text(t('chooseLanguage')),
           ],
         ),
         content: Column(
@@ -297,15 +300,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: const Text('English'),
               subtitle: const Text('English'),
               value: 'en',
-              groupValue: _currentLanguage,
+              groupValue: currentLang,
               onChanged: (value) async {
                 Navigator.pop(context);
-                await _changeLanguage(value!);
+                await localeProvider.setLocale(Locale(value!));
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Language changed to English'),
-                      duration: Duration(seconds: 2),
+                    SnackBar(
+                      content: Text(localeProvider.t('languageChanged')),
+                      duration: const Duration(seconds: 2),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -313,18 +316,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             RadioListTile<String>(
-              title: const Text('हिन्दी (Hindi)'),
+              title: const Text('हिन्दी'),
               subtitle: const Text('Hindi'),
               value: 'hi',
-              groupValue: _currentLanguage,
+              groupValue: currentLang,
               onChanged: (value) async {
                 Navigator.pop(context);
-                await _changeLanguage(value!);
+                await localeProvider.setLocale(Locale(value!));
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('भाषा हिन्दी में बदल गई'),
-                      duration: Duration(seconds: 2),
+                    SnackBar(
+                      content: Text(localeProvider.t('languageChanged')),
+                      duration: const Duration(seconds: 2),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -337,13 +340,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _changeLanguage(String languageCode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language_code', languageCode);
-    setState(() {
-      _currentLanguage = languageCode;
-    });
-  }
 
   void _showThemeDialog(BuildContext context) {
     final themeProvider = context.read<ThemeProvider>();
@@ -351,7 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Choose Theme'),
+        title: Text(t('chooseLanguage')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

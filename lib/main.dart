@@ -9,6 +9,7 @@ import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/device_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/admin_provider.dart';
+import 'presentation/providers/locale_provider.dart';
 import 'presentation/screens/splash/splash_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'core/theme/app_theme.dart';
@@ -135,12 +136,24 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()..loadTheme()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
+      child: Consumer2<ThemeProvider, LocaleProvider>(
+        builder: (context, themeProvider, localeProvider, _) {
+          // Don't render app until locale is loaded
+          if (localeProvider.isLoading) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              home: Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          }
           return MaterialApp(
             navigatorKey: navigatorKey,
             title: 'Admin Panel',
