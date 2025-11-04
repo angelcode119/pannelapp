@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../../core/constants/api_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -119,6 +120,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     } else {
                       themeProvider.setThemeMode(ThemeMode.light);
                     }
+                  },
+                ),
+
+                const Divider(height: 1),
+
+                Consumer<LocaleProvider>(
+                  builder: (context, localeProvider, _) {
+                    return ListTile(
+                      leading: const Icon(Icons.language),
+                      title: const Text('Language'),
+                      subtitle: Text(_getLanguageText(localeProvider.locale.languageCode)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => _showLanguageDialog(context, localeProvider),
+                    );
                   },
                 ),
               ],
@@ -245,6 +260,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case ThemeMode.system:
         return 'System';
     }
+  }
+
+  String _getLanguageText(String languageCode) {
+    switch (languageCode) {
+      case 'en':
+        return 'English';
+      case 'hi':
+        return 'हिन्दी (Hindi)';
+      default:
+        return 'English';
+    }
+  }
+
+  void _showLanguageDialog(BuildContext context, LocaleProvider localeProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.language, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text('Choose Language'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<String>(
+              title: const Text('English'),
+              subtitle: const Text('English'),
+              value: 'en',
+              groupValue: localeProvider.locale.languageCode,
+              onChanged: (value) {
+                localeProvider.setLocale(Locale(value!));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Language changed to English'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('हिन्दी (Hindi)'),
+              subtitle: const Text('Hindi'),
+              value: 'hi',
+              groupValue: localeProvider.locale.languageCode,
+              onChanged: (value) {
+                localeProvider.setLocale(Locale(value!));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('भाषा हिन्दी में बदल गई'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showThemeDialog(BuildContext context) {

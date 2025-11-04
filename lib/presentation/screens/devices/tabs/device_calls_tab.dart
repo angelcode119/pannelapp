@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../data/models/device.dart';
 import '../../../../data/models/call_log.dart';
 import '../../../../data/repositories/device_repository.dart';
+import '../../../../data/services/export_service.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../../../widgets/common/empty_state.dart';
 
@@ -114,6 +115,30 @@ class _DeviceCallsTabState extends State<DeviceCallsTab>
     );
   }
 
+  Future<void> _exportCalls(BuildContext context) async {
+    final exportService = ExportService();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+    
+    final success = await exportService.exportCallsToExcel(
+      _calls,
+      widget.device.deviceId,
+    );
+    
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? '✅ Calls exported successfully!' : '❌ Export failed'),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -133,6 +158,26 @@ class _DeviceCallsTabState extends State<DeviceCallsTab>
           Column(
             children: [
               const SizedBox(height: 12),
+
+              // Export Button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _calls.isEmpty ? null : () => _exportCalls(context),
+                      icon: const Icon(Icons.file_download_outlined, size: 16),
+                      label: const Text('Export', style: TextStyle(fontSize: 12)),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        backgroundColor: const Color(0xFFF59E0B),
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               // Tab Bar - Compact Version
               Container(
