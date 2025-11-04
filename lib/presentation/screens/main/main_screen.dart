@@ -43,13 +43,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
       final deviceProvider = context.read<DeviceProvider>();
+      final adminProvider = context.read<AdminProvider>();
       final currentAdmin = authProvider.currentAdmin;
       
-      // ??? super admin ???? ?? ???? ??? ??? ??? ?????? ??? ???? ?? ???? ???
+      // ✅ ابتدا device های خودش رو نشون بده (بدون فیلتر = device های assign شده به خودش)
+      deviceProvider.fetchDevices();
+      
+      // ✅ اگه super admin هست، لیست ادمین ها رو برای فیلتر بگیر
       if (currentAdmin != null && currentAdmin.isSuperAdmin) {
-        deviceProvider.setAdminFilter(currentAdmin.username);
-      } else {
-        deviceProvider.fetchDevices();
+        adminProvider.fetchAdmins();
       }
     });
   }
@@ -533,8 +535,9 @@ class _DevicesPageState extends State<_DevicesPage> {
           _deviceNotingStatus[deviceId] = false;
         });
 
-        // ?? ???? success ????? ???
+        // ✅ اگه موفقیت آمیز بود، device رو refresh کن (با تاخیر کوچیک)
         if (success) {
+          await Future.delayed(const Duration(milliseconds: 500));
           await deviceProvider.refreshSingleDevice(deviceId);
         }
 
@@ -1433,7 +1436,9 @@ class _AdminFilterDropdown extends StatelessWidget {
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 100),
               child: Text(
-                deviceProvider.adminFilter ?? 'By Admin',
+                deviceProvider.adminFilter != null 
+                    ? deviceProvider.adminFilter!
+                    : 'All Admins',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -1460,7 +1465,65 @@ class _AdminFilterDropdown extends StatelessWidget {
         final currentAdmin = authProvider.currentAdmin;
         
         return [
-          // All Devices Option
+          // My Devices Option (Default - shows current admin's devices)
+          if (currentAdmin != null)
+            PopupMenuItem<String?>(
+              value: currentAdmin.username,
+              height: 40,
+              child: Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withOpacity(0.5),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${currentAdmin.username} (My Devices)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: const Color(0xFF6366F1).withOpacity(0.3),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: const Text(
+                      'ME',
+                      style: TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF6366F1),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const PopupMenuDivider(height: 4),
+          
+          // All Admins' Devices Option
           PopupMenuItem<String?>(
             value: null,
             height: 36,
@@ -1476,70 +1539,12 @@ class _AdminFilterDropdown extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'All Devices',
+                  'All Admins\' Devices',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
-          const PopupMenuDivider(height: 4),
-          
-          // Current Admin (if has devices)
-          if (currentAdmin != null)
-            PopupMenuItem<String?>(
-              value: currentAdmin.username,
-              height: 40,
-              child: Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFEF4444).withOpacity(0.5),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${currentAdmin.username} (Me)',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: const Color(0xFFEF4444).withOpacity(0.3),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: const Text(
-                      'SUPER',
-                      style: TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFFEF4444),
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           
           // Other Admins
           if (currentAdmin != null && adminProvider.admins.isNotEmpty)

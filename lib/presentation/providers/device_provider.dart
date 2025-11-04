@@ -251,13 +251,19 @@ class DeviceProvider extends ChangeNotifier {
 
   Future<void> refreshSingleDevice(String deviceId) async {
     try {
+      debugPrint('🔄 Refreshing device: $deviceId');
       final updatedDevice = await _deviceRepository.getDevice(deviceId);
       if (updatedDevice != null) {
         final index = _devices.indexWhere((d) => d.deviceId == deviceId);
         if (index != -1) {
           _devices[index] = updatedDevice;
+          debugPrint('✅ Device updated - Note: ${updatedDevice.noteMessage}, Priority: ${updatedDevice.notePriority}');
           notifyListeners();
+        } else {
+          debugPrint('⚠️ Device not found in list: $deviceId');
         }
+      } else {
+        debugPrint('⚠️ Updated device is null');
       }
     } catch (e) {
       debugPrint('❌ Refresh single device failed: $e');
