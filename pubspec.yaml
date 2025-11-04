@@ -25,10 +25,14 @@ dependencies:
   # UI & Styling
   google_fonts: ^6.2.1
   
-  # Firebase
+  # Firebase (Mobile only - web will use stubs)
   firebase_core: ^2.24.2
   firebase_messaging: ^14.7.10
   flutter_local_notifications: ^17.0.0
+  
+  # Platform detection
+  flutter_web_plugins:
+    sdk: flutter
   
   # Utilities
   intl: ^0.20.2

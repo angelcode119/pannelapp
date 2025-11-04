@@ -16,4 +16,10 @@ class FirebaseMessaging {
 class RemoteMessage {
   String? messageId;
   Map<String, dynamic> data = {};
+  RemoteNotification? notification;
+}
+
+class RemoteNotification {
+  String? title;
+  String? body;
 }
