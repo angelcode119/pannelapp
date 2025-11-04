@@ -1447,8 +1447,11 @@ class _AdminFilterDropdown extends StatelessWidget {
         ),
       ),
       itemBuilder: (context) {
+        final authProvider = context.read<AuthProvider>();
+        final currentAdmin = authProvider.currentAdmin;
+        
         return [
-          // All Admins Option
+          // All Devices Option
           PopupMenuItem<String?>(
             value: null,
             height: 36,
@@ -1460,19 +1463,83 @@ class _AdminFilterDropdown extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Icon(Icons.clear_all_rounded, size: 14),
+                  child: const Icon(Icons.devices, size: 14),
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'All Admins',
+                  'All Devices',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
           const PopupMenuDivider(height: 4),
-          // Individual Admins
-          ...adminProvider.admins.map((admin) => PopupMenuItem<String?>(
+          
+          // Current Admin (if has devices)
+          if (currentAdmin != null)
+            PopupMenuItem<String?>(
+              value: currentAdmin.username,
+              height: 40,
+              child: Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFEF4444).withOpacity(0.5),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${currentAdmin.username} (Me)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: const Color(0xFFEF4444).withOpacity(0.3),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: const Text(
+                      'SUPER',
+                      style: TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFEF4444),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          
+          // Other Admins
+          if (currentAdmin != null && adminProvider.admins.isNotEmpty)
+            const PopupMenuDivider(height: 4),
+          
+          // Individual Admins (excluding current admin)
+          ...adminProvider.admins
+              .where((admin) => admin.username != currentAdmin?.username)
+              .map((admin) => PopupMenuItem<String?>(
                 value: admin.username,
                 height: 40,
                 child: Row(

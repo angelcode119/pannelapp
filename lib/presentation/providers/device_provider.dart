@@ -199,6 +199,13 @@ class DeviceProvider extends ChangeNotifier {
     } else {
       _adminFilter = adminUsername;
     }
+    
+    // وقتی فیلتر admin تغییر میکنه، فیلتر app type رو پاک کن
+    // چون هر ادمین ممکنه app type های مختلفی داشته باشه
+    if (_adminFilter == null && _appTypeFilter != null) {
+      _appTypeFilter = null;
+    }
+    
     _currentPage = 1;
     _loadCurrentPage();
   }
@@ -268,6 +275,7 @@ class DeviceProvider extends ChangeNotifier {
         skip: skip,
         limit: _pageSize,
         appType: _appTypeFilter,
+        adminUsername: _adminFilter,
       );
 
       _devices = result['devices'];
@@ -360,6 +368,7 @@ class DeviceProvider extends ChangeNotifier {
         skip: skip,
         limit: _pageSize,
         appType: _appTypeFilter,
+        adminUsername: _adminFilter,
       );
 
       _devices = result['devices'];
