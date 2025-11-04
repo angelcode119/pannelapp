@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../data/models/device.dart';
 import '../../../../data/models/sms_message.dart';
 import '../../../../data/repositories/device_repository.dart';
+import '../../../../data/services/export_service.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../../../providers/device_provider.dart';
 import '../sms_detail_screen.dart';
@@ -358,6 +359,30 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
     ).then((_) => _fetchMessages());
   }
 
+  Future<void> _exportSms(BuildContext context) async {
+    final exportService = ExportService();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+    
+    final success = await exportService.exportSmsToExcel(
+      _filteredMessages,
+      widget.device.deviceId,
+    );
+    
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? '✅ SMS exported successfully!' : '❌ Export failed'),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -458,12 +483,33 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                     ),
                     const SizedBox(width: 8),
                     // Actions
+                    // دکمه Export 📥
+                    _ActionButton(
+                      icon: Icons.file_download_outlined,
+                      color: const Color(0xFFF59E0B),
+                      onTap: _filteredMessages.isEmpty ? null : () => _exportSms(context),
+                      isDark: isDark,
+                      tooltip: 'Export SMS',
+                    ),
+                    const SizedBox(width: 6),
+                    // دکمه Refresh از سرور 🔄
+                    _ActionButton(
+                      icon: Icons.refresh_rounded,
+                      color: const Color(0xFF14B8A6),
+                      onTap: _isLoading ? null : _fetchMessages,
+                      isLoading: _isLoading,
+                      isDark: isDark,
+                      tooltip: 'Refresh from server',
+                    ),
+                    const SizedBox(width: 6),
+                    // دکمه Sync با Firebase 📲
                     _ActionButton(
                       icon: Icons.sync_rounded,
                       color: const Color(0xFF3B82F6),
                       onTap: _syncSms,
                       isLoading: _isSendingCommand,
                       isDark: isDark,
+                      tooltip: 'Sync via Firebase',
                     ),
                     const SizedBox(width: 6),
                     _ActionButton(
@@ -471,6 +517,7 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                       color: const Color(0xFF10B981),
                       onTap: _showSendSmsDialog,
                       isDark: isDark,
+                      tooltip: 'Send SMS',
                     ),
                     const SizedBox(width: 6),
                     _ActionButton(
@@ -484,6 +531,7 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                         });
                       },
                       isDark: isDark,
+                      tooltip: 'Filters',
                     ),
                   ],
                 ),
@@ -1017,9 +1065,10 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool isLoading;
   final bool isDark;
+  final String? tooltip;
 
   const _ActionButton({
     required this.icon,
@@ -1027,17 +1076,20 @@ class _ActionButton extends StatelessWidget {
     required this.onTap,
     this.isLoading = false,
     required this.isDark,
+    this.tooltip,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: isLoading ? null : onTap,
+    final button = GestureDetector(
+      onTap: (isLoading || onTap == null) ? null : onTap,
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.8)],
+            colors: (isLoading || onTap == null)
+                ? [color.withOpacity(0.5), color.withOpacity(0.4)]
+                : [color, color.withOpacity(0.8)],
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
@@ -1060,6 +1112,14 @@ class _ActionButton extends StatelessWidget {
             : Icon(icon, size: 16, color: Colors.white),
       ),
     );
+    
+    if (tooltip != null) {
+      return Tooltip(
+        message: tooltip!,
+        child: button,
+      );
+    }
+    return button;
   }
 }
 

@@ -5,6 +5,7 @@ import '../../providers/device_provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/common/stats_card.dart';
 import '../../../data/models/stats.dart';
+import '../../../data/services/export_service.dart';
 import '../../widgets/common/device_card.dart';
 import '../../widgets/common/empty_state.dart';
 import '../auth/login_screen.dart';
@@ -563,6 +564,69 @@ class _DevicesPageState extends State<_DevicesPage> {
     }
   }
 
+  Future<void> _exportDevices(BuildContext context, List devices) async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Export Devices'),
+        content: const Text('Choose export format:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final exportService = ExportService();
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (ctx) => const Center(child: CircularProgressIndicator()),
+              );
+              final success = await exportService.exportDevicesToCsv(devices);
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Export successful!' : 'Export failed'),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.table_chart, size: 18),
+            label: const Text('CSV'),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final exportService = ExportService();
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (ctx) => const Center(child: CircularProgressIndicator()),
+              );
+              final success = await exportService.exportDevicesToExcel(devices);
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'Export successful!' : 'Export failed'),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.grid_on, size: 18),
+            label: const Text('Excel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final deviceProvider = context.watch<DeviceProvider>();
@@ -575,6 +639,12 @@ class _DevicesPageState extends State<_DevicesPage> {
         title: const Text('Devices'),
         automaticallyImplyLeading: false,
         actions: [
+          // Export Button
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            onPressed: deviceProvider.devices.isEmpty ? null : () => _exportDevices(context, deviceProvider.devices),
+            tooltip: 'Export',
+          ),
           IconButton(
             icon: deviceProvider.isLoading
                 ? SizedBox(
