@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/admin.dart';
 import '../../data/repositories/auth_repository.dart';
-import '../../data/services/fcm_service.dart';
+import '../../data/services/fcm_service.dart'
+    if (dart.library.html) '../../core/utils/fcm_service_stub.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum AuthStatus {

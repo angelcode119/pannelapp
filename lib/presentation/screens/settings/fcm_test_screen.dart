@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import '../../../data/services/fcm_service.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_messaging/firebase_messaging.dart'
+    if (dart.library.html) '../../../core/utils/firebase_stub.dart';
+import '../../../data/services/fcm_service.dart'
+    if (dart.library.html) '../../../core/utils/fcm_service_stub.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    if (dart.library.html) '../../../core/utils/flutter_local_notifications_stub.dart';
 
 class FCMTestScreen extends StatefulWidget {
   const FCMTestScreen({super.key});
