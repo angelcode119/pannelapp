@@ -569,15 +569,16 @@ class _DevicesPageState extends State<_DevicesPage> {
   }
 
   Future<void> _exportDevices(BuildContext context, List<Device> devices) async {
+    final t = context.read<LocaleProvider>().t;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Export Devices'),
-        content: const Text('Choose export format:'),
+        title: Text(t('exportDevices')),
+        content: Text(t('chooseFormat')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(t('cancel')),
           ),
           ElevatedButton.icon(
             onPressed: () async {
@@ -600,7 +601,7 @@ class _DevicesPageState extends State<_DevicesPage> {
               }
             },
             icon: const Icon(Icons.table_chart, size: 18),
-            label: const Text('CSV'),
+            label: Text(t('csvFormat')),
           ),
           const SizedBox(width: 8),
           ElevatedButton.icon(
@@ -624,7 +625,7 @@ class _DevicesPageState extends State<_DevicesPage> {
               }
             },
             icon: const Icon(Icons.grid_on, size: 18),
-            label: const Text('Excel'),
+            label: Text(t('excelFormat')),
           ),
         ],
       ),
@@ -635,19 +636,20 @@ class _DevicesPageState extends State<_DevicesPage> {
   Widget build(BuildContext context) {
     final deviceProvider = context.watch<DeviceProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final t = context.watch<LocaleProvider>().t;
     final admin = authProvider.currentAdmin;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Devices'),
+        title: Text(t('devices')),
         automaticallyImplyLeading: false,
         actions: [
           // Export Button
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
             onPressed: deviceProvider.devices.isEmpty ? null : () => _exportDevices(context, deviceProvider.devices),
-            tooltip: 'Export',
+            tooltip: t('export'),
           ),
           IconButton(
             icon: deviceProvider.isLoading
@@ -663,7 +665,7 @@ class _DevicesPageState extends State<_DevicesPage> {
             )
                 : const Icon(Icons.refresh_rounded),
             onPressed: deviceProvider.isLoading ? null : () => deviceProvider.refreshDevices(),
-            tooltip: 'Refresh',
+            tooltip: t('refresh'),
           ),
           if (deviceProvider.pendingDevices > 0)
             Stack(
@@ -750,7 +752,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                         deviceProvider.appTypeFilter != null ||
                         deviceProvider.adminFilter != null) ...[
                       _UltraCompactChip(
-                        label: 'Clear',
+                        label: t('clear'),
                         icon: Icons.close_rounded,
                         color: Colors.red,
                         onTap: () => deviceProvider.clearAllFilters(),
@@ -1512,7 +1514,7 @@ class _AdminFilterDropdown extends StatelessWidget {
               child: Text(
                 deviceProvider.adminFilter != null 
                     ? deviceProvider.adminFilter!
-                    : 'All Admins',
+                    : t('allAdmins'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -1582,9 +1584,9 @@ class _AdminFilterDropdown extends StatelessWidget {
                         width: 0.5,
                       ),
                     ),
-                    child: const Text(
-                      'ME',
-                      style: TextStyle(
+                    child: Text(
+                      t('myDevices'),
+                      style: const TextStyle(
                         fontSize: 8,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF6366F1),
@@ -1612,9 +1614,9 @@ class _AdminFilterDropdown extends StatelessWidget {
                   child: const Icon(Icons.devices, size: 14),
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  'All Admins\' Devices',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                Text(
+                  t('allAdmins'),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
