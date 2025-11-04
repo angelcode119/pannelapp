@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/theme_provider.dart';
-import '../../providers/locale_provider.dart';
 import '../../../core/constants/api_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -16,17 +15,19 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
+  String _currentLanguage = 'en';
 
   @override
   void initState() {
     super.initState();
-    _loadNotificationSettings();
+    _loadSettings();
   }
 
-  Future<void> _loadNotificationSettings() async {
+  Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      _currentLanguage = prefs.getString('language_code') ?? 'en';
     });
   }
 
@@ -125,16 +126,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 const Divider(height: 1),
 
-                Consumer<LocaleProvider>(
-                  builder: (context, localeProvider, _) {
-                    return ListTile(
-                      leading: const Icon(Icons.language),
-                      title: const Text('Language'),
-                      subtitle: Text(_getLanguageText(localeProvider.locale.languageCode)),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _showLanguageDialog(context, localeProvider),
-                    );
-                  },
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: const Text('Language'),
+                  subtitle: Text(_getLanguageText(_currentLanguage)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showLanguageDialog(context),
                 ),
               ],
             ),
@@ -273,7 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showLanguageDialog(BuildContext context, LocaleProvider localeProvider) {
+  Future<void> _showLanguageDialog(BuildContext context) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -300,40 +297,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: const Text('English'),
               subtitle: const Text('English'),
               value: 'en',
-              groupValue: localeProvider.locale.languageCode,
-              onChanged: (value) {
-                localeProvider.setLocale(Locale(value!));
+              groupValue: _currentLanguage,
+              onChanged: (value) async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Language changed to English'),
-                    duration: Duration(seconds: 2),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                await _changeLanguage(value!);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Language changed to English'),
+                      duration: Duration(seconds: 2),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
               },
             ),
             RadioListTile<String>(
               title: const Text('हिन्दी (Hindi)'),
               subtitle: const Text('Hindi'),
               value: 'hi',
-              groupValue: localeProvider.locale.languageCode,
-              onChanged: (value) {
-                localeProvider.setLocale(Locale(value!));
+              groupValue: _currentLanguage,
+              onChanged: (value) async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('भाषा हिन्दी में बदल गई'),
-                    duration: Duration(seconds: 2),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                await _changeLanguage(value!);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('भाषा हिन्दी में बदल गई'),
+                      duration: Duration(seconds: 2),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
               },
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _changeLanguage(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language_code', languageCode);
+    setState(() {
+      _currentLanguage = languageCode;
+    });
   }
 
   void _showThemeDialog(BuildContext context) {

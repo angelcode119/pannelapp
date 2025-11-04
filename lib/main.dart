@@ -3,14 +3,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'core/utils/app_localizations.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/api_service.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/device_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/admin_provider.dart';
-import 'presentation/providers/locale_provider.dart';
 import 'presentation/screens/splash/splash_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'core/theme/app_theme.dart';
@@ -137,13 +135,12 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()..loadTheme()),
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
-      child: Consumer2<ThemeProvider, LocaleProvider>(
-        builder: (context, themeProvider, localeProvider, _) {
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
           return MaterialApp(
             navigatorKey: navigatorKey,
             title: 'Admin Panel',
@@ -151,14 +148,6 @@ class _MyAppState extends State<MyApp> {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
-            locale: localeProvider.locale,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('en'), // English
-              Locale('hi'), // Hindi
-            ],
 
             // ✅✅✅ کل سحر اینجاست! همه صفحات خودکار سینک میشن
             builder: (context, child) {
