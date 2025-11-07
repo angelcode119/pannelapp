@@ -1375,6 +1375,19 @@ class _AdminFilterDropdown extends StatelessWidget {
 
   const _AdminFilterDropdown({required this.deviceProvider});
 
+  String _getDisplayLabel(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final currentAdmin = authProvider.currentAdmin;
+    
+    if (deviceProvider.adminFilter == null) {
+      return 'All Devices';
+    } else if (deviceProvider.adminFilter == currentAdmin?.username) {
+      return 'My Devices';
+    } else {
+      return deviceProvider.adminFilter!;
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final adminProvider = context.watch<AdminProvider>();
@@ -1429,7 +1442,7 @@ class _AdminFilterDropdown extends StatelessWidget {
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 100),
               child: Text(
-                deviceProvider.adminFilter ?? 'By Admin',
+                _getDisplayLabel(context),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
