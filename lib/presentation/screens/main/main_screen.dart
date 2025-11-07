@@ -41,16 +41,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _navAnimController.forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authProvider = context.read<AuthProvider>();
       final deviceProvider = context.read<DeviceProvider>();
-      final currentAdmin = authProvider.currentAdmin;
       
-      // ??? super admin ???? ?? ???? ??? ??? ??? ?????? ??? ???? ?? ???? ???
-      if (currentAdmin != null && currentAdmin.isSuperAdmin) {
-        deviceProvider.setAdminFilter(currentAdmin.username);
-      } else {
-        deviceProvider.fetchDevices();
-      }
+      // Load all devices by default for all admins
+      deviceProvider.fetchDevices();
     });
   }
 
@@ -428,7 +422,7 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// ?? ???? ???? ?????????
+// صفحه اصلی دستگاه‌ها
 class _DevicesPage extends StatefulWidget {
   @override
   State<_DevicesPage> createState() => _DevicesPageState();
@@ -497,7 +491,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   Future<void> _handleNoteDevice(String deviceId) async {
     final deviceProvider = context.read<DeviceProvider>();
 
-    // ???? ???? ?????? ????
+    // گرفتن دستگاه فعلی
     final device = deviceProvider.devices.firstWhere((d) => d.deviceId == deviceId);
 
     final result = await showDialog<Map<String, String>>(
@@ -515,7 +509,7 @@ class _DevicesPageState extends State<_DevicesPage> {
       _deviceNoteResults[deviceId] = null;
     });
 
-    bool success = false; // ?? ????? ????? ??
+    bool success = false; // بعداً مقدار واقعی میگیره
 
     try {
       success = await deviceProvider.sendCommand(
@@ -533,7 +527,7 @@ class _DevicesPageState extends State<_DevicesPage> {
           _deviceNotingStatus[deviceId] = false;
         });
 
-        // ?? ???? success ????? ???
+        // اگر موفق بود دستگاه رو رفرش کن
         if (success) {
           await deviceProvider.refreshSingleDevice(deviceId);
         }
@@ -632,7 +626,7 @@ class _DevicesPageState extends State<_DevicesPage> {
         onRefresh: () => deviceProvider.refreshDevices(),
         child: CustomScrollView(
           slivers: [
-            // ?? ???? ???
+            // کارت آمار کلی
             if (!deviceProvider.isLoading)
               SliverToBoxAdapter(
                 child: StatsRow(
@@ -656,7 +650,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                 ),
               ),
 
-            // Ultra Compact Filters - ??? ? ??? ? ???! ??
+            // Ultra Compact Filters - کوچک و زیبا و شیک!
             SliverToBoxAdapter(
               child: Container(
                 height: 32,
@@ -760,8 +754,10 @@ class _DevicesPageState extends State<_DevicesPage> {
                       color: const Color(0xFFF59E0B),
                     ),
                     
-                    // App Types
-                    if (deviceProvider.appTypes != null && deviceProvider.appTypes!.hasAppTypes) ...[
+                    // App Types - فقط وقتی یک ادمین خاص انتخاب شده
+                    if (deviceProvider.adminFilter != null && 
+                        deviceProvider.appTypes != null && 
+                        deviceProvider.appTypes!.hasAppTypes) ...[
                       const SizedBox(width: 4),
                       _FilterDivider(color: const Color(0xFF6366F1).withOpacity(0.3)),
                       const SizedBox(width: 4),
@@ -1055,7 +1051,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   }
 }
 
-// ?? Compact Filter Group Widget
+// Compact Filter Group Widget
 class _CompactFilterGroup extends StatelessWidget {
   final IconData icon;
   final List<_CompactFilterData> filters;
@@ -1115,7 +1111,7 @@ class _CompactFilterGroup extends StatelessWidget {
   }
 }
 
-// ?? Compact Filter Data
+// Compact Filter Data
 class _CompactFilterData {
   final String label;
   final int count;
@@ -1132,7 +1128,7 @@ class _CompactFilterData {
   });
 }
 
-// ?? Compact Filter Chip
+// Compact Filter Chip
 class _CompactFilterChip extends StatelessWidget {
   final String label;
   final int count;
@@ -1227,7 +1223,7 @@ class _CompactFilterChip extends StatelessWidget {
   }
 }
 
-// ?? Page Size Chip Widget
+// Page Size Chip Widget
 class _PageSizeChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -1296,7 +1292,7 @@ class _PageSizeChip extends StatelessWidget {
 
 
 
-// ?? Floating Pagination Widget
+// Floating Pagination Widget
 class _FloatingPagination extends StatelessWidget {
   final DeviceProvider deviceProvider;
 
@@ -1373,7 +1369,7 @@ class _FloatingPagination extends StatelessWidget {
     );
   }
 }
-// ?? Admin Filter Dropdown - ????? ? ???!
+// Admin Filter Dropdown - کوچیک و زیبا!
 class _AdminFilterDropdown extends StatelessWidget {
   final DeviceProvider deviceProvider;
 
@@ -1639,7 +1635,7 @@ class _AdminFilterDropdown extends StatelessWidget {
   }
 }
 
-// ?? Ultra Compact Chip - ?????? ???!
+// Ultra Compact Chip - خیلی کوچیک!
 class _UltraCompactChip extends StatelessWidget {
   final String label;
   final int? count;
@@ -1741,7 +1737,7 @@ class _UltraCompactChip extends StatelessWidget {
   }
 }
 
-// ?? Category Icon - ????? ?????????
+// Category Icon - آیکون دسته‌بندی
 class _CategoryIcon extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -1770,7 +1766,7 @@ class _CategoryIcon extends StatelessWidget {
   }
 }
 
-// ? Filter Divider - ????????
+// Filter Divider - جداکننده
 class _FilterDivider extends StatelessWidget {
   final Color color;
 

@@ -216,9 +216,11 @@ class DeviceProvider extends ChangeNotifier {
     _statusFilter = null;
     _connectionFilter = null;
     _upiFilter = null;
-    _notePriorityFilter = null;  // 👈 جدید
-    _appTypeFilter = null;  // 👈 جدید
-    notifyListeners();
+    _notePriorityFilter = null;
+    _appTypeFilter = null;
+    _adminFilter = null;  // پاک کردن فیلتر ادمین هم
+    _currentPage = 1;
+    _loadCurrentPage();
   }
 
   void setSearchQuery(String query) {
