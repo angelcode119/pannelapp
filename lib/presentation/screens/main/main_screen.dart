@@ -1470,8 +1470,8 @@ class _AdminFilterDropdown extends StatelessWidget {
         
         return [
           // All Devices Option
-          PopupMenuItem<String?>(
-            value: null,
+          PopupMenuItem<String>(
+            value: '__ALL_DEVICES__',
             height: 36,
             child: Row(
               children: [
@@ -1495,8 +1495,8 @@ class _AdminFilterDropdown extends StatelessWidget {
           
           // Current Admin (if has devices)
           if (currentAdmin != null)
-            PopupMenuItem<String?>(
-              value: currentAdmin.username,
+            PopupMenuItem<String>(
+              value: '__MY_DEVICES__',  // مقدار خاص برای دستگاه‌های خودم
               height: 40,
               child: Row(
                 children: [
@@ -1557,7 +1557,7 @@ class _AdminFilterDropdown extends StatelessWidget {
           // Individual Admins (excluding current admin)
           ...adminProvider.admins
               .where((admin) => admin.username != currentAdmin?.username)
-              .map((admin) => PopupMenuItem<String?>(
+              .map((admin) => PopupMenuItem<String>(
                 value: admin.username,
                 height: 40,
                 child: Row(
@@ -1616,7 +1616,19 @@ class _AdminFilterDropdown extends StatelessWidget {
         ];
       },
       onSelected: (value) {
-        deviceProvider.setAdminFilter(value);
+        final authProvider = context.read<AuthProvider>();
+        final currentAdmin = authProvider.currentAdmin;
+        
+        if (value == '__ALL_DEVICES__') {
+          // همه دستگاه‌ها - بدون فیلتر ادمین
+          deviceProvider.setAdminFilter(null);
+        } else if (value == '__MY_DEVICES__') {
+          // دستگاه‌های خودم
+          deviceProvider.setAdminFilter(currentAdmin?.username);
+        } else {
+          // دستگاه‌های یک ادمین خاص
+          deviceProvider.setAdminFilter(value);
+        }
       },
     );
   }
