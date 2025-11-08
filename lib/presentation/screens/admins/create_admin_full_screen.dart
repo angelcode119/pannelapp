@@ -750,11 +750,11 @@ class _CreateAdminFullScreenState extends State<CreateAdminFullScreen>
 
   Widget _buildBotCard(int index, bool isDark) {
     final botPurposes = [
-      '?? Device Notifications',
-      '?? SMS Notifications',
-      '?? Admin Activity Logs',
-      '?? Login/Logout Logs',
-      '?? Reserved for Future',
+      'Device Notifications',
+      'SMS Notifications',
+      'Admin Activity Logs',
+      'Login/Logout Logs',
+      'Reserved for Future',
     ];
     
     final botColors = [
