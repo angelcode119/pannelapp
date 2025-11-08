@@ -244,7 +244,7 @@ jobs:
           $BUILD_TIME = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
           
           $MESSAGE = @"
-          ❌ <b>Windows Build Failed!</b>
+          ❌ <b>Wisndows Build Failed!</b>
           
           Build: #${{ github.run_number }}
           Branch: $BRANCH_NAME
