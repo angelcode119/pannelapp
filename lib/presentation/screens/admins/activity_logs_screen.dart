@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
-import '../../../data/services/export_service.dart';
 import '../../../core/utils/date_utils.dart' as utils;
 import '../../../presentation/widgets/common/empty_state.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -49,29 +48,6 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
     return 'Activity Logs';
   }
 
-  Future<void> _exportActivities(BuildContext context, AdminProvider adminProvider) async {
-    final exportService = ExportService();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(child: CircularProgressIndicator()),
-    );
-    
-    final success = await exportService.exportActivityLogsToExcel(
-      adminProvider.activities,
-    );
-    
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? '✅ Activity logs exported successfully!' : '❌ Export failed'),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final adminProvider = context.watch<AdminProvider>();
@@ -81,12 +57,6 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
       appBar: AppBar(
         title: Text(_getTitle()),
         actions: [
-          // Export Button
-          IconButton(
-            icon: const Icon(Icons.file_download_outlined),
-            onPressed: adminProvider.activities.isEmpty ? null : () => _exportActivities(context, adminProvider),
-            tooltip: 'Export',
-          ),
           if (!widget.isMyActivities && widget.adminUsername == null)
             Container(
               margin: const EdgeInsets.only(right: 4),

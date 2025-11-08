@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../data/models/device.dart';
 import '../../../../data/models/call_log.dart';
 import '../../../../data/repositories/device_repository.dart';
-import '../../../../data/services/export_service.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../../../widgets/common/empty_state.dart';
 
@@ -115,30 +114,6 @@ class _DeviceCallsTabState extends State<DeviceCallsTab>
     );
   }
 
-  Future<void> _exportCalls(BuildContext context) async {
-    final exportService = ExportService();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(child: CircularProgressIndicator()),
-    );
-    
-    final success = await exportService.exportCallsToExcel(
-      _calls,
-      widget.device.deviceId,
-    );
-    
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? '✅ Calls exported successfully!' : '❌ Export failed'),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -158,60 +133,6 @@ class _DeviceCallsTabState extends State<DeviceCallsTab>
           Column(
             children: [
               const SizedBox(height: 12),
-
-              // Export Button - Styled like SMS & Contacts tabs
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF59E0B), Color(0xFFEA580C)],
-                        ),
-                        borderRadius: BorderRadius.circular(8.96),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFF59E0B).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _calls.isEmpty ? null : () => _exportCalls(context),
-                          borderRadius: BorderRadius.circular(8.96),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9.6),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(
-                                  Icons.file_download_outlined,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Export',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
               // Tab Bar - Compact Version
               Container(

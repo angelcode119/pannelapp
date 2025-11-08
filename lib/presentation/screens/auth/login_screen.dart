@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/locale_provider.dart';
 import '../main/main_screen.dart';
 import 'otp_verification_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -69,7 +68,6 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     final authProvider = context.read<AuthProvider>();
-    final t = context.read<LocaleProvider>().t;
     final result = await authProvider.login(
       _usernameController.text.trim(),
       _passwordController.text,
@@ -118,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen>
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    authProvider.errorMessage ?? t('loginFailed'),
+                    authProvider.errorMessage ?? 'Login failed',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -139,7 +137,6 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final t = context.watch<LocaleProvider>().t;
 
     return Scaffold(
       body: Container(
@@ -211,9 +208,9 @@ class _LoginScreenState extends State<LoginScreen>
                               shaderCallback: (bounds) => const LinearGradient(
                                 colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                               ).createShader(bounds),
-                              child: Text(
-                                t('welcomeBack'),
-                                style: const TextStyle(
+                              child: const Text(
+                                'Welcome Back',
+                                style: TextStyle(
                                   fontSize: 28.8,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
@@ -226,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen>
                             const SizedBox(height: 8),
 
                             Text(
-                              t('signInToContinue'),
+                              'Sign in to continue to Pannel',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -274,8 +271,8 @@ class _LoginScreenState extends State<LoginScreen>
                                     fontWeight: FontWeight.w600,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: t('username'),
-                                    hintText: t('enterUsername'),
+                                    labelText: 'Username',
+                                    hintText: 'Enter your username',
                                     prefixIcon: Container(
                                       margin: const EdgeInsets.all(9.6),
                                       padding: const EdgeInsets.all(6.4),
@@ -320,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   textInputAction: TextInputAction.next,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return t('enterUsername');
+                                      return 'Username is required';
                                     }
                                     return null;
                                   },
@@ -336,8 +333,8 @@ class _LoginScreenState extends State<LoginScreen>
                                     fontWeight: FontWeight.w600,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: t('password'),
-                                    hintText: t('enterPassword'),
+                                    labelText: 'Password',
+                                    hintText: 'Enter your password',
                                     prefixIcon: Container(
                                       margin: const EdgeInsets.all(9.6),
                                       padding: const EdgeInsets.all(6.4),
@@ -396,10 +393,10 @@ class _LoginScreenState extends State<LoginScreen>
                                   onFieldSubmitted: (_) => _handleLogin(),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return t('enterPassword');
+                                      return 'Password is required';
                                     }
                                     if (value.length < 6) {
-                                      return t('enterPassword');
+                                      return 'Password must be at least 6 characters';
                                     }
                                     return null;
                                   },
@@ -448,9 +445,9 @@ class _LoginScreenState extends State<LoginScreen>
                                             Colors.white),
                                       ),
                                     )
-                                        : Text(
-                                      t('login'),
-                                      style: const TextStyle(
+                                        : const Text(
+                                      'Sign In',
+                                      style: TextStyle(
                                         fontSize: 12.8,
                                         fontWeight: FontWeight.w700,
                                         color: Colors.white,

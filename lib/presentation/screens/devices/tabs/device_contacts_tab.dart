@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../data/models/device.dart';
 import '../../../../data/models/contact.dart';
 import '../../../../data/repositories/device_repository.dart';
-import '../../../../data/services/export_service.dart';
 import '../../../providers/device_provider.dart';
 import '../../../widgets/common/empty_state.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -119,30 +118,6 @@ class _DeviceContactsTabState extends State<DeviceContactsTab> {
     }
   }
 
-  Future<void> _exportContacts(BuildContext context) async {
-    final exportService = ExportService();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(child: CircularProgressIndicator()),
-    );
-    
-    final success = await exportService.exportContactsToVCard(
-      _filteredContacts,
-      widget.device.deviceId,
-    );
-    
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? '✅ Contacts exported successfully!' : '❌ Export failed'),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -211,40 +186,6 @@ class _DeviceContactsTabState extends State<DeviceContactsTab> {
               ),
               const SizedBox(width: 12),
 
-              // Export Button
-              Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                  ),
-                  borderRadius: BorderRadius.circular(8.96),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF59E0B).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _filteredContacts.isEmpty ? null : () => _exportContacts(context),
-                    borderRadius: BorderRadius.circular(8.96),
-                    child: Container(
-                      padding: const EdgeInsets.all(9.6),
-                      child: const Icon(
-                        Icons.file_download_outlined,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Sync Button
               Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(

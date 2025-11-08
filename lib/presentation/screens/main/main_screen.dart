@@ -3,11 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/device_provider.dart';
 import '../../providers/admin_provider.dart';
-import '../../providers/locale_provider.dart';
 import '../../widgets/common/stats_card.dart';
 import '../../../data/models/stats.dart';
-import '../../../data/models/device.dart';
-import '../../../data/services/export_service.dart';
 import '../../widgets/common/device_card.dart';
 import '../../widgets/common/empty_state.dart';
 import '../auth/login_screen.dart';
@@ -44,18 +41,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _navAnimController.forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authProvider = context.read<AuthProvider>();
       final deviceProvider = context.read<DeviceProvider>();
-      final adminProvider = context.read<AdminProvider>();
-      final currentAdmin = authProvider.currentAdmin;
       
-      // ✅ ابتدا device های خودش رو نشون بده (بدون فیلتر = device های assign شده به خودش)
+      // Load all devices by default for all admins
       deviceProvider.fetchDevices();
-      
-      // ✅ اگه super admin هست، لیست ادمین ها رو برای فیلتر بگیر
-      if (currentAdmin != null && currentAdmin.isSuperAdmin) {
-        adminProvider.fetchAdmins();
-      }
     });
   }
 
@@ -68,8 +57,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final localeProvider = context.watch<LocaleProvider>();
-    final t = localeProvider.t;
     final admin = authProvider.currentAdmin;
     final isWide = MediaQuery.of(context).size.width > 768;
 
@@ -102,7 +89,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               if (isWide)
                 FadeTransition(
                   opacity: _navAnimation,
-                  child: _buildSideNav(context, admin, t),
+                  child: _buildSideNav(context, admin),
                 ),
               Expanded(
                 child: FadeTransition(
@@ -114,11 +101,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      bottomNavigationBar: isWide ? null : _buildBottomNav(context, admin, t),
+      bottomNavigationBar: isWide ? null : _buildBottomNav(context, admin),
     );
   }
 
-  Widget _buildSideNav(BuildContext context, admin, Function t) {
+  Widget _buildSideNav(BuildContext context, admin) {
     return Container(
       width: 208,
       margin: const EdgeInsets.all(9.6),
@@ -167,7 +154,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  t('appTitle'),
+                  'Admin Panel',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -187,7 +174,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               children: [
                 _NavItem(
                   icon: Icons.devices_rounded,
-                  label: t('devices'),
+                  label: 'Devices',
                   index: 0,
                   selectedIndex: _selectedIndex,
                   onTap: () => setState(() => _selectedIndex = 0),
@@ -195,7 +182,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 const SizedBox(height: 6),
                 _NavItem(
                   icon: Icons.person_rounded,
-                  label: t('profile'),
+                  label: 'Profile',
                   index: 1,
                   selectedIndex: _selectedIndex,
                   onTap: () => setState(() => _selectedIndex = 1),
@@ -203,7 +190,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 const SizedBox(height: 6),
                 _NavItem(
                   icon: Icons.settings_rounded,
-                  label: t('settings'),
+                  label: 'Settings',
                   index: 2,
                   selectedIndex: _selectedIndex,
                   onTap: () => setState(() => _selectedIndex = 2),
@@ -212,7 +199,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   const SizedBox(height: 6),
                   _NavItem(
                     icon: Icons.shield_rounded,
-                    label: t('management'),
+                    label: 'Management',
                     index: 3,
                     selectedIndex: _selectedIndex,
                     onTap: () => setState(() => _selectedIndex = 3),
@@ -240,7 +227,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       Icon(Icons.logout_rounded, color: Colors.red[400], size: 14.4),
                       const SizedBox(width: 8),
                       Text(
-                        t('logout'),
+                        'Logout',
                         style: TextStyle(
                           color: Colors.red[400],
                           fontWeight: FontWeight.w600,
@@ -258,7 +245,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context, admin, Function t) {
+  Widget _buildBottomNav(BuildContext context, admin) {
     return Container(
       margin: const EdgeInsets.all(9.6),
       decoration: BoxDecoration(
@@ -291,26 +278,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           unselectedFontSize: 10,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
           items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.devices_outlined),
-              activeIcon: const Icon(Icons.devices_rounded),
-              label: t('devices'),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.devices_outlined),
+              activeIcon: Icon(Icons.devices_rounded),
+              label: 'Devices',
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.person_outline_rounded),
-              activeIcon: const Icon(Icons.person_rounded),
-              label: t('profile'),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline_rounded),
+              activeIcon: Icon(Icons.person_rounded),
+              label: 'Profile',
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings_outlined),
-              activeIcon: const Icon(Icons.settings_rounded),
-              label: t('settings'),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.settings_outlined),
+              activeIcon: Icon(Icons.settings_rounded),
+              label: 'Settings',
             ),
             if (admin?.isSuperAdmin == true)
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.shield_outlined),
-                activeIcon: const Icon(Icons.shield_rounded),
-                label: t('management'),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.shield_outlined),
+                activeIcon: Icon(Icons.shield_rounded),
+                label: 'Admin',
               ),
           ],
         ),
@@ -334,14 +321,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               child: const Icon(Icons.logout_rounded, color: Colors.red, size: 16),
             ),
             const SizedBox(width: 12),
-            Text(context.read<LocaleProvider>().t('logout')),
+            const Text('Logout'),
           ],
         ),
-        content: Text(context.read<LocaleProvider>().t('logoutConfirm')),
+        content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(context.read<LocaleProvider>().t('cancel')),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -366,8 +353,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 if (context.mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(context.read<LocaleProvider>().t('error')),
+                    const SnackBar(
+                      content: Text('error in log out'),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -375,7 +362,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text(context.read<LocaleProvider>().t('logout')),
+            child: const Text('Logout'),
           ),
         ],
       ),
@@ -435,7 +422,7 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// ?? ???? ???? ?????????
+// صفحه اصلی دستگاه‌ها
 class _DevicesPage extends StatefulWidget {
   @override
   State<_DevicesPage> createState() => _DevicesPageState();
@@ -504,7 +491,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   Future<void> _handleNoteDevice(String deviceId) async {
     final deviceProvider = context.read<DeviceProvider>();
 
-    // ???? ???? ?????? ????
+    // گرفتن دستگاه فعلی
     final device = deviceProvider.devices.firstWhere((d) => d.deviceId == deviceId);
 
     final result = await showDialog<Map<String, String>>(
@@ -522,7 +509,7 @@ class _DevicesPageState extends State<_DevicesPage> {
       _deviceNoteResults[deviceId] = null;
     });
 
-    bool success = false; // ?? ????? ????? ??
+    bool success = false; // بعداً مقدار واقعی میگیره
 
     try {
       success = await deviceProvider.sendCommand(
@@ -540,9 +527,8 @@ class _DevicesPageState extends State<_DevicesPage> {
           _deviceNotingStatus[deviceId] = false;
         });
 
-        // ✅ اگه موفقیت آمیز بود، device رو refresh کن (با تاخیر کوچیک)
+        // اگر موفق بود دستگاه رو رفرش کن
         if (success) {
-          await Future.delayed(const Duration(milliseconds: 500));
           await deviceProvider.refreshSingleDevice(deviceId);
         }
 
@@ -568,89 +554,18 @@ class _DevicesPageState extends State<_DevicesPage> {
     }
   }
 
-  Future<void> _exportDevices(BuildContext context, List<Device> devices) async {
-    final t = context.read<LocaleProvider>().t;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t('exportDevices')),
-        content: Text(t('chooseFormat')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(t('cancel')),
-          ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final exportService = ExportService();
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (ctx) => const Center(child: CircularProgressIndicator()),
-              );
-              final success = await exportService.exportDevicesToCsv(devices);
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Export successful!' : 'Export failed'),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-              }
-            },
-            icon: const Icon(Icons.table_chart, size: 18),
-            label: Text(t('csvFormat')),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton.icon(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final exportService = ExportService();
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (ctx) => const Center(child: CircularProgressIndicator()),
-              );
-              final success = await exportService.exportDevicesToExcel(devices);
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Export successful!' : 'Export failed'),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-              }
-            },
-            icon: const Icon(Icons.grid_on, size: 18),
-            label: Text(t('excelFormat')),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final deviceProvider = context.watch<DeviceProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final t = context.watch<LocaleProvider>().t;
     final admin = authProvider.currentAdmin;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(t('devices')),
+        title: const Text('Devices'),
         automaticallyImplyLeading: false,
         actions: [
-          // Export Button
-          IconButton(
-            icon: const Icon(Icons.file_download_outlined),
-            onPressed: deviceProvider.devices.isEmpty ? null : () => _exportDevices(context, deviceProvider.devices),
-            tooltip: t('export'),
-          ),
           IconButton(
             icon: deviceProvider.isLoading
                 ? SizedBox(
@@ -665,7 +580,7 @@ class _DevicesPageState extends State<_DevicesPage> {
             )
                 : const Icon(Icons.refresh_rounded),
             onPressed: deviceProvider.isLoading ? null : () => deviceProvider.refreshDevices(),
-            tooltip: t('refresh'),
+            tooltip: 'Refresh',
           ),
           if (deviceProvider.pendingDevices > 0)
             Stack(
@@ -711,7 +626,7 @@ class _DevicesPageState extends State<_DevicesPage> {
         onRefresh: () => deviceProvider.refreshDevices(),
         child: CustomScrollView(
           slivers: [
-            // ?? ???? ???
+            // کارت آمار کلی
             if (!deviceProvider.isLoading)
               SliverToBoxAdapter(
                 child: StatsRow(
@@ -735,7 +650,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                 ),
               ),
 
-            // Ultra Compact Filters - ??? ? ??? ? ???! ??
+            // Ultra Compact Filters - کوچک و زیبا و شیک!
             SliverToBoxAdapter(
               child: Container(
                 height: 32,
@@ -752,7 +667,7 @@ class _DevicesPageState extends State<_DevicesPage> {
                         deviceProvider.appTypeFilter != null ||
                         deviceProvider.adminFilter != null) ...[
                       _UltraCompactChip(
-                        label: t('clear'),
+                        label: 'Clear',
                         icon: Icons.close_rounded,
                         color: Colors.red,
                         onTap: () => deviceProvider.clearAllFilters(),
@@ -839,8 +754,10 @@ class _DevicesPageState extends State<_DevicesPage> {
                       color: const Color(0xFFF59E0B),
                     ),
                     
-                    // App Types
-                    if (deviceProvider.appTypes != null && deviceProvider.appTypes!.hasAppTypes) ...[
+                    // App Types - فقط وقتی یک ادمین خاص انتخاب شده
+                    if (deviceProvider.adminFilter != null && 
+                        deviceProvider.appTypes != null && 
+                        deviceProvider.appTypes!.hasAppTypes) ...[
                       const SizedBox(width: 4),
                       _FilterDivider(color: const Color(0xFF6366F1).withOpacity(0.3)),
                       const SizedBox(width: 4),
@@ -1134,7 +1051,7 @@ class _DevicesPageState extends State<_DevicesPage> {
   }
 }
 
-// ?? Compact Filter Group Widget
+// Compact Filter Group Widget
 class _CompactFilterGroup extends StatelessWidget {
   final IconData icon;
   final List<_CompactFilterData> filters;
@@ -1194,7 +1111,7 @@ class _CompactFilterGroup extends StatelessWidget {
   }
 }
 
-// ?? Compact Filter Data
+// Compact Filter Data
 class _CompactFilterData {
   final String label;
   final int count;
@@ -1211,7 +1128,7 @@ class _CompactFilterData {
   });
 }
 
-// ?? Compact Filter Chip
+// Compact Filter Chip
 class _CompactFilterChip extends StatelessWidget {
   final String label;
   final int count;
@@ -1306,7 +1223,7 @@ class _CompactFilterChip extends StatelessWidget {
   }
 }
 
-// ?? Page Size Chip Widget
+// Page Size Chip Widget
 class _PageSizeChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -1375,7 +1292,7 @@ class _PageSizeChip extends StatelessWidget {
 
 
 
-// ?? Floating Pagination Widget
+// Floating Pagination Widget
 class _FloatingPagination extends StatelessWidget {
   final DeviceProvider deviceProvider;
 
@@ -1452,17 +1369,28 @@ class _FloatingPagination extends StatelessWidget {
     );
   }
 }
-// ?? Admin Filter Dropdown - ????? ? ???!
+// Admin Filter Dropdown - کوچیک و زیبا!
 class _AdminFilterDropdown extends StatelessWidget {
   final DeviceProvider deviceProvider;
 
   const _AdminFilterDropdown({required this.deviceProvider});
 
+  String _getDisplayLabel(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final currentAdmin = authProvider.currentAdmin;
+    
+    if (deviceProvider.adminFilter == null) {
+      return 'All Devices';
+    } else if (deviceProvider.adminFilter == currentAdmin?.username) {
+      return 'My Devices';
+    } else {
+      return deviceProvider.adminFilter!;
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
-    final deviceProvider = context.watch<DeviceProvider>();
     final adminProvider = context.watch<AdminProvider>();
-    final t = context.watch<LocaleProvider>().t;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return PopupMenuButton<String?>(
@@ -1473,25 +1401,24 @@ class _AdminFilterDropdown extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          // فقط وقتی یه ادمین خاص انتخاب شده (نه null و نه "all")، قرمز بشه
-          gradient: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
+          gradient: deviceProvider.adminFilter != null
               ? const LinearGradient(
                   colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: (deviceProvider.adminFilter == null || deviceProvider.adminFilter == 'all')
+          color: deviceProvider.adminFilter == null
               ? (isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100)
               : null,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
+            color: deviceProvider.adminFilter != null
                 ? const Color(0xFFEF4444)
                 : (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade300),
             width: 0.5,
           ),
-          boxShadow: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
+          boxShadow: deviceProvider.adminFilter != null
               ? [
                   BoxShadow(
                     color: const Color(0xFFEF4444).withOpacity(0.3),
@@ -1507,7 +1434,7 @@ class _AdminFilterDropdown extends StatelessWidget {
             Icon(
               Icons.admin_panel_settings_rounded,
               size: 12,
-              color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
+              color: deviceProvider.adminFilter != null
                   ? Colors.white
                   : const Color(0xFFEF4444),
             ),
@@ -1515,15 +1442,11 @@ class _AdminFilterDropdown extends StatelessWidget {
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 100),
               child: Text(
-                deviceProvider.adminFilter == null 
-                    ? t('myDevices')
-                    : deviceProvider.adminFilter == 'all'
-                        ? t('allAdmins')
-                        : deviceProvider.adminFilter!,
+                _getDisplayLabel(context),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
+                  color: deviceProvider.adminFilter != null
                       ? Colors.white
                       : (isDark ? Colors.white70 : Colors.black87),
                 ),
@@ -1534,7 +1457,7 @@ class _AdminFilterDropdown extends StatelessWidget {
             Icon(
               Icons.arrow_drop_down_rounded,
               size: 14,
-              color: (deviceProvider.adminFilter != null && deviceProvider.adminFilter != 'all')
+              color: deviceProvider.adminFilter != null
                   ? Colors.white
                   : (isDark ? Colors.white60 : Colors.black54),
             ),
@@ -1546,67 +1469,9 @@ class _AdminFilterDropdown extends StatelessWidget {
         final currentAdmin = authProvider.currentAdmin;
         
         return [
-          // My Devices Option (Default - shows current admin's devices)
-          if (currentAdmin != null)
-            PopupMenuItem<String?>(
-              value: null,  // null means "my devices"
-              height: 40,
-              child: Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF6366F1).withOpacity(0.5),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${currentAdmin.username} (My Devices)',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: const Color(0xFF6366F1).withOpacity(0.3),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Text(
-                      t('myDevices'),
-                      style: const TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF6366F1),
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          const PopupMenuDivider(height: 4),
-          
-          // All Admins' Devices Option
-          PopupMenuItem<String?>(
-            value: 'all',  // API expects "all" for all admins
+          // All Devices Option
+          PopupMenuItem<String>(
+            value: '__ALL_DEVICES__',
             height: 36,
             child: Row(
               children: [
@@ -1619,13 +1484,71 @@ class _AdminFilterDropdown extends StatelessWidget {
                   child: const Icon(Icons.devices, size: 14),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  t('allAdmins'),
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                const Text(
+                  'All Devices',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
+          const PopupMenuDivider(height: 4),
+          
+          // Current Admin (if has devices)
+          if (currentAdmin != null)
+            PopupMenuItem<String>(
+              value: '__MY_DEVICES__',  // مقدار خاص برای دستگاه‌های خودم
+              height: 40,
+              child: Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFEF4444).withOpacity(0.5),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${currentAdmin.username} (Me)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: const Color(0xFFEF4444).withOpacity(0.3),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: const Text(
+                      'SUPER',
+                      style: TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFEF4444),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           
           // Other Admins
           if (currentAdmin != null && adminProvider.admins.isNotEmpty)
@@ -1634,7 +1557,7 @@ class _AdminFilterDropdown extends StatelessWidget {
           // Individual Admins (excluding current admin)
           ...adminProvider.admins
               .where((admin) => admin.username != currentAdmin?.username)
-              .map((admin) => PopupMenuItem<String?>(
+              .map((admin) => PopupMenuItem<String>(
                 value: admin.username,
                 height: 40,
                 child: Row(
@@ -1693,8 +1616,19 @@ class _AdminFilterDropdown extends StatelessWidget {
         ];
       },
       onSelected: (value) {
-        // مستقیم value رو بفرست (null, "all", یا username)
-        deviceProvider.setAdminFilter(value);
+        final authProvider = context.read<AuthProvider>();
+        final currentAdmin = authProvider.currentAdmin;
+        
+        if (value == '__ALL_DEVICES__') {
+          // همه دستگاه‌ها - بدون فیلتر ادمین
+          deviceProvider.setAdminFilter(null);
+        } else if (value == '__MY_DEVICES__') {
+          // دستگاه‌های خودم
+          deviceProvider.setAdminFilter(currentAdmin?.username);
+        } else {
+          // دستگاه‌های یک ادمین خاص
+          deviceProvider.setAdminFilter(value);
+        }
       },
     );
   }
@@ -1726,7 +1660,7 @@ class _AdminFilterDropdown extends StatelessWidget {
   }
 }
 
-// ?? Ultra Compact Chip - ?????? ???!
+// Ultra Compact Chip - خیلی کوچیک!
 class _UltraCompactChip extends StatelessWidget {
   final String label;
   final int? count;
@@ -1828,7 +1762,7 @@ class _UltraCompactChip extends StatelessWidget {
   }
 }
 
-// ?? Category Icon - ????? ?????????
+// Category Icon - آیکون دسته‌بندی
 class _CategoryIcon extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -1857,7 +1791,7 @@ class _CategoryIcon extends StatelessWidget {
   }
 }
 
-// ? Filter Divider - ????????
+// Filter Divider - جداکننده
 class _FilterDivider extends StatelessWidget {
   final Color color;
 

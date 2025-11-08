@@ -36,12 +36,6 @@ dependencies:
   url_launcher: ^6.3.0
   flutter_screenutil: ^5.9.0
   flutter_launcher_icons: ^0.14.1
-  
-  # Export & File Operations
-  excel: ^4.0.2
-  csv: ^6.0.0
-  path_provider: ^2.1.1
-  share_plus: ^7.2.1
 
 
 
@@ -59,7 +53,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/
-    - assets/translations/
 
 flutter_icons:
   android: true

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/locale_provider.dart';
 import 'create_admin_full_screen.dart';
 import 'edit_admin_full_screen.dart';
 import 'activity_logs_screen.dart';
@@ -29,12 +28,11 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   Widget build(BuildContext context) {
     final adminProvider = context.watch<AdminProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final t = context.watch<LocaleProvider>().t;
     final currentAdmin = authProvider.currentAdmin;
 
     if (currentAdmin == null || !currentAdmin.isSuperAdmin) {
       return Scaffold(
-        appBar: AppBar(title: Text(t('adminManagement'))),
+        appBar: AppBar(title: const Text('Admin Management')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -62,7 +60,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(t('adminManagement')),
+        title: const Text('Admin Management'),
         automaticallyImplyLeading: false,
         actions: [
           Container(

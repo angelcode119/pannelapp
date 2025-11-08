@@ -196,15 +196,12 @@ class DeviceProvider extends ChangeNotifier {
   void setAdminFilter(String? adminUsername) {
     final oldFilter = _adminFilter;
     
-    // Set the filter value
-    // null = my devices (current admin)
-    // "all" = all admins' devices
-    // username = specific admin's devices
+    // همیشه مقدار جدید رو set کن (بدون toggle)
     _adminFilter = adminUsername;
     
-    // وقتی فیلتر عوض میشه، app type filter رو پاک کن
+    // وقتی به "All Devices" تغییر میکنه (null)، app type filter رو پاک کن
     // چون ممکنه app type های مختلف از ادمین های مختلف باشه
-    if (oldFilter != _adminFilter && _appTypeFilter != null) {
+    if (_adminFilter == null && _appTypeFilter != null) {
       _appTypeFilter = null;
     }
     
@@ -216,9 +213,11 @@ class DeviceProvider extends ChangeNotifier {
     _statusFilter = null;
     _connectionFilter = null;
     _upiFilter = null;
-    _notePriorityFilter = null;  // 👈 جدید
-    _appTypeFilter = null;  // 👈 جدید
-    notifyListeners();
+    _notePriorityFilter = null;
+    _appTypeFilter = null;
+    _adminFilter = null;  // پاک کردن فیلتر ادمین هم
+    _currentPage = 1;
+    _loadCurrentPage();
   }
 
   void setSearchQuery(String query) {
@@ -251,19 +250,13 @@ class DeviceProvider extends ChangeNotifier {
 
   Future<void> refreshSingleDevice(String deviceId) async {
     try {
-      debugPrint('🔄 Refreshing device: $deviceId');
       final updatedDevice = await _deviceRepository.getDevice(deviceId);
       if (updatedDevice != null) {
         final index = _devices.indexWhere((d) => d.deviceId == deviceId);
         if (index != -1) {
           _devices[index] = updatedDevice;
-          debugPrint('✅ Device updated - Note: ${updatedDevice.noteMessage}, Priority: ${updatedDevice.notePriority}');
           notifyListeners();
-        } else {
-          debugPrint('⚠️ Device not found in list: $deviceId');
         }
-      } else {
-        debugPrint('⚠️ Updated device is null');
       }
     } catch (e) {
       debugPrint('❌ Refresh single device failed: $e');
