@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/theme_provider.dart';
 import '../../../core/constants/api_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'fcm_test_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -128,48 +127,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 16),
 
-          const _SectionHeader(title: 'Developer Tools'),
-
-          Card(
-            margin: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 6.4),
-            child: ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.bug_report,
-                  color: Color(0xFF6366F1),
-                  size: 20,
-                ),
-              ),
-              title: const Text(
-                'FCM Test & Debug',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text(
-                'Test push notifications',
-                style: TextStyle(fontSize: 12),
-              ),
-              trailing: const Icon(Icons.chevron_right, size: 20),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FCMTestScreen(),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
           const _SectionHeader(title: 'About'),
 
           Card(
@@ -187,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   leading: const Icon(Icons.dns_outlined),
                   title: const Text('Server Address'),
-                  subtitle: Text("Unknow"),
+                  subtitle: Text("Unknown"),
                   trailing: const Icon(Icons.copy, size: 16),
                   onTap: () {
 
