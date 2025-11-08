@@ -12,10 +12,18 @@ import '../../core/constants/api_constants.dart';
 class DeviceRepository {
   final ApiService _apiService = ApiService();
 
-  // Get available app types
-  Future<AppTypesResponse?> getAppTypes() async {
+  Future<AppTypesResponse?> getAppTypes({String? adminUsername}) async {
     try {
-      final response = await _apiService.get(ApiConstants.appTypes);
+      final queryParams = <String, dynamic>{};
+      
+      if (adminUsername != null && adminUsername.isNotEmpty) {
+        queryParams['admin_username'] = adminUsername;
+      }
+      
+      final response = await _apiService.get(
+        ApiConstants.appTypes,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
 
       if (response.statusCode == 200) {
         return AppTypesResponse.fromJson(response.data);
@@ -26,7 +34,6 @@ class DeviceRepository {
     }
   }
 
-  // صفحه‌بندی با limit و skip و app_type filter و admin filter
   Future<Map<String, dynamic>> getDevices({
     int skip = 0,
     int limit = 50,
@@ -87,7 +94,6 @@ class DeviceRepository {
     }
   }
 
-  // 🎯 Updated: SMS با pagination
   Future<Map<String, dynamic>> getDeviceSms(
       String deviceId, {
         int skip = 0,
@@ -119,7 +125,6 @@ class DeviceRepository {
     }
   }
 
-  // 🎯 Updated: Contacts با pagination
   Future<Map<String, dynamic>> getDeviceContacts(
       String deviceId, {
         int skip = 0,
@@ -149,7 +154,6 @@ class DeviceRepository {
     }
   }
 
-  // 🎯 Updated: Calls با pagination
   Future<Map<String, dynamic>> getDeviceCalls(
       String deviceId, {
         int skip = 0,
@@ -179,7 +183,6 @@ class DeviceRepository {
     }
   }
 
-  // 🎯 Updated: Logs با pagination
   Future<Map<String, dynamic>> getDeviceLogs(
       String deviceId, {
         int skip = 0,
@@ -245,9 +248,18 @@ class DeviceRepository {
     }
   }
 
-  Future<Stats?> getStats() async {
+  Future<Stats?> getStats({String? adminUsername}) async {
     try {
-      final response = await _apiService.get(ApiConstants.stats);
+      final queryParams = <String, dynamic>{};
+      
+      if (adminUsername != null && adminUsername.isNotEmpty) {
+        queryParams['admin_username'] = adminUsername;
+      }
+      
+      final response = await _apiService.get(
+        ApiConstants.stats,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
 
       if (response.statusCode == 200) {
         return Stats.fromJson(response.data);

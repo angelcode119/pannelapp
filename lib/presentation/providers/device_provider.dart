@@ -5,11 +5,10 @@ import '../../data/models/stats.dart';
 import '../../data/models/app_type.dart';
 import '../../data/repositories/device_repository.dart';
 
-// 🔥 دسته‌بندی فیلترها
 enum StatusFilter { active, pending }
 enum ConnectionFilter { online, offline }
 enum UpiFilter { withUpi, withoutUpi }
-enum NotePriorityFilter { lowBalance, highBalance, none }  // 👈 جدید
+enum NotePriorityFilter { lowBalance, highBalance, none }
 
 class DeviceProvider extends ChangeNotifier {
   final DeviceRepository _deviceRepository = DeviceRepository();
@@ -20,26 +19,22 @@ class DeviceProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // 🔥 فیلترهای دسته‌بندی شده (هر کدوم null یعنی فیلتر نشده)
   StatusFilter? _statusFilter;
   ConnectionFilter? _connectionFilter;
   UpiFilter? _upiFilter;
-  NotePriorityFilter? _notePriorityFilter;  // 👈 جدید
-  String? _appTypeFilter;  // 👈 جدید
-  String? _adminFilter;  // 👈 فیلتر ادمین (فقط برای سوپرادمین)
+  NotePriorityFilter? _notePriorityFilter;
+  String? _appTypeFilter;
+  String? _adminFilter;
   String _searchQuery = '';
 
-  // Pagination
   int _currentPage = 1;
   int _pageSize = 50;
   int _totalDevicesCount = 0;
 
-  // Auto-Refresh
   Timer? _autoRefreshTimer;
   bool _autoRefreshEnabled = false;
   int _autoRefreshInterval = 30;
 
-  // Getters
   List<Device> get devices => _filteredDevices;
   Stats? get stats => _stats;
   AppTypesResponse? get appTypes => _appTypes;
@@ -48,9 +43,9 @@ class DeviceProvider extends ChangeNotifier {
   StatusFilter? get statusFilter => _statusFilter;
   ConnectionFilter? get connectionFilter => _connectionFilter;
   UpiFilter? get upiFilter => _upiFilter;
-  NotePriorityFilter? get notePriorityFilter => _notePriorityFilter;  // 👈 جدید
-  String? get appTypeFilter => _appTypeFilter;  // 👈 جدید
-  String? get adminFilter => _adminFilter;  // 👈 جدید
+  NotePriorityFilter? get notePriorityFilter => _notePriorityFilter;
+  String? get appTypeFilter => _appTypeFilter;
+  String? get adminFilter => _adminFilter;
   String get searchQuery => _searchQuery;
   int get totalDevicesCount => _totalDevicesCount;
   int get currentPage => _currentPage;
@@ -61,11 +56,9 @@ class DeviceProvider extends ChangeNotifier {
   bool get autoRefreshEnabled => _autoRefreshEnabled;
   int get autoRefreshInterval => _autoRefreshInterval;
 
-  // 🔥 لاجیک فیلتر ترکیبی
   List<Device> get _filteredDevices {
     var filtered = _devices;
 
-    // فیلتر وضعیت (Active/Pending)
     if (_statusFilter != null) {
       switch (_statusFilter!) {
         case StatusFilter.active:
@@ -77,7 +70,6 @@ class DeviceProvider extends ChangeNotifier {
       }
     }
 
-    // فیلتر اتصال (Online/Offline)
     if (_connectionFilter != null) {
       switch (_connectionFilter!) {
         case ConnectionFilter.online:
@@ -89,7 +81,6 @@ class DeviceProvider extends ChangeNotifier {
       }
     }
 
-    // فیلتر UPI
     if (_upiFilter != null) {
       switch (_upiFilter!) {
         case UpiFilter.withUpi:
@@ -101,7 +92,6 @@ class DeviceProvider extends ChangeNotifier {
       }
     }
 
-    // 👇 فیلتر Note Priority (جدید)
     if (_notePriorityFilter != null) {
       switch (_notePriorityFilter!) {
         case NotePriorityFilter.lowBalance:
@@ -116,7 +106,6 @@ class DeviceProvider extends ChangeNotifier {
       }
     }
 
-    // جستجو
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((device) {
         final query = _searchQuery.toLowerCase();
@@ -129,7 +118,6 @@ class DeviceProvider extends ChangeNotifier {
     return filtered;
   }
 
-  // آمار کلی (از همه دستگاه‌ها)
   int get totalDevices => _devices.length;
   int get activeDevices => _devices.where((d) => d.isActive).length;
   int get pendingDevices => _devices.where((d) => d.isPending).length;
@@ -137,16 +125,13 @@ class DeviceProvider extends ChangeNotifier {
   int get offlineDevices => _devices.where((d) => d.isOffline).length;
   int get devicesWithUpi => _devices.where((d) => d.hasUpi).length;
   int get devicesWithoutUpi => _devices.where((d) => !d.hasUpi).length;
-
-  // 👇 آمار Note Priority (جدید)
   int get devicesLowBalance => _devices.where((d) => d.notePriority == 'lowbalance').length;
   int get devicesHighBalance => _devices.where((d) => d.notePriority == 'highbalance').length;
   int get devicesNoPriority => _devices.where((d) => d.notePriority == null || d.notePriority == 'none').length;
 
-  // 🔥 تنظیم فیلترها
   void setStatusFilter(StatusFilter? filter) {
     if (_statusFilter == filter) {
-      _statusFilter = null; // toggle off
+      _statusFilter = null;
     } else {
       _statusFilter = filter;
     }
@@ -155,7 +140,7 @@ class DeviceProvider extends ChangeNotifier {
 
   void setConnectionFilter(ConnectionFilter? filter) {
     if (_connectionFilter == filter) {
-      _connectionFilter = null; // toggle off
+      _connectionFilter = null;
     } else {
       _connectionFilter = filter;
     }
@@ -164,17 +149,16 @@ class DeviceProvider extends ChangeNotifier {
 
   void setUpiFilter(UpiFilter? filter) {
     if (_upiFilter == filter) {
-      _upiFilter = null; // toggle off
+      _upiFilter = null;
     } else {
       _upiFilter = filter;
     }
     notifyListeners();
   }
 
-  // 👇 تنظیم فیلتر Note Priority (جدید)
   void setNotePriorityFilter(NotePriorityFilter? filter) {
     if (_notePriorityFilter == filter) {
-      _notePriorityFilter = null; // toggle off
+      _notePriorityFilter = null;
     } else {
       _notePriorityFilter = filter;
     }
@@ -182,10 +166,9 @@ class DeviceProvider extends ChangeNotifier {
     _loadCurrentPage();
   }
   
-  // 👇 تنظیم فیلتر App Type (جدید)
   void setAppTypeFilter(String? appType) {
     if (_appTypeFilter == appType) {
-      _appTypeFilter = null; // toggle off
+      _appTypeFilter = null;
     } else {
       _appTypeFilter = appType;
     }
@@ -194,13 +177,8 @@ class DeviceProvider extends ChangeNotifier {
   }
 
   void setAdminFilter(String? adminUsername) {
-    final oldFilter = _adminFilter;
-    
-    // همیشه مقدار جدید رو set کن (بدون toggle)
     _adminFilter = adminUsername;
     
-    // وقتی به "All Devices" تغییر میکنه (null)، app type filter رو پاک کن
-    // چون ممکنه app type های مختلف از ادمین های مختلف باشه
     if (_adminFilter == null && _appTypeFilter != null) {
       _appTypeFilter = null;
     }
@@ -215,7 +193,7 @@ class DeviceProvider extends ChangeNotifier {
     _upiFilter = null;
     _notePriorityFilter = null;
     _appTypeFilter = null;
-    _adminFilter = null;  // پاک کردن فیلتر ادمین هم
+    _adminFilter = null;
     _currentPage = 1;
     _loadCurrentPage();
   }
@@ -230,20 +208,17 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // لود app types
   Future<void> fetchAppTypes() async {
     try {
-      _appTypes = await _deviceRepository.getAppTypes();
+      _appTypes = await _deviceRepository.getAppTypes(adminUsername: _adminFilter);
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error fetching app types: $e');
     }
   }
 
-  // لود اولیه
   Future<void> fetchDevices() async {
     _currentPage = 1;
-    // Fetch app types (non-blocking, errors are caught inside)
     fetchAppTypes();
     await _loadCurrentPage();
   }
@@ -263,7 +238,6 @@ class DeviceProvider extends ChangeNotifier {
     }
   }
 
-  // لود صفحه فعلی
   Future<void> _loadCurrentPage() async {
     try {
       _isLoading = true;
@@ -281,9 +255,9 @@ class DeviceProvider extends ChangeNotifier {
 
       _devices = result['devices'];
       _totalDevicesCount = result['total'];
-      _stats = await _deviceRepository.getStats();
       
-      // Refresh app types to get updated counts (non-blocking)
+      _stats = await _deviceRepository.getStats(adminUsername: _adminFilter);
+      
       fetchAppTypes();
 
       _isLoading = false;
@@ -325,15 +299,13 @@ class DeviceProvider extends ChangeNotifier {
     await _loadCurrentPage();
   }
 
-
-  // Auto-Refresh
   void enableAutoRefresh({int intervalSeconds = 30}) {
     _autoRefreshInterval = intervalSeconds;
     _autoRefreshEnabled = true;
     _autoRefreshTimer?.cancel();
     _autoRefreshTimer = Timer.periodic(
       Duration(seconds: intervalSeconds),
-          (timer) {
+      (timer) {
         if (!_isLoading) {
           _silentRefresh();
         }
@@ -341,9 +313,6 @@ class DeviceProvider extends ChangeNotifier {
     );
     notifyListeners();
   }
-
-
-
 
   void disableAutoRefresh() {
     _autoRefreshEnabled = false;
@@ -374,9 +343,9 @@ class DeviceProvider extends ChangeNotifier {
 
       _devices = result['devices'];
       _totalDevicesCount = result['total'];
-      _stats = await _deviceRepository.getStats();
       
-      // Refresh app types to get updated counts (non-blocking)
+      _stats = await _deviceRepository.getStats(adminUsername: _adminFilter);
+      
       fetchAppTypes();
 
       notifyListeners();
@@ -420,7 +389,6 @@ class DeviceProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
-
 
   @override
   void dispose() {
