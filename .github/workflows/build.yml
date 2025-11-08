@@ -136,7 +136,7 @@ jobs:
           curl -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
                -d chat_id=${TELEGRAM_CHAT_ID} \
                -d parse_mode=HTML \
-               -d text="❌ <b>Android Build Failed!</b>
+               -d text="❌. <b>Android Build Failed!</b>
           
           Build: #${{ github.run_number }}
           Branch: ${BRANCH_NAME}
