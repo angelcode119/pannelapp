@@ -458,6 +458,15 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
                     ),
                     const SizedBox(width: 8),
                     // Actions
+                    // Actions
+                    _ActionButton(
+                      icon: Icons.refresh_rounded,
+                      color: const Color(0xFF14B8A6),
+                      onTap: _fetchMessages,
+                      isLoading: _isLoading,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(width: 6),
                     _ActionButton(
                       icon: Icons.sync_rounded,
                       color: const Color(0xFF3B82F6),
