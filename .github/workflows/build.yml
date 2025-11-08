@@ -2,9 +2,9 @@ name: Android & Windows CI Build
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, develop, review-and-enhance-code-for-performance-4b31]
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, master, develop, review-and-enhance-code-for-performance-4b31]
   workflow_dispatch:
 
 jobs:
