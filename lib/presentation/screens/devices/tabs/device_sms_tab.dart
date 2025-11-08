@@ -693,7 +693,7 @@ class _DeviceSmsTabState extends State<DeviceSmsTab> {
           ),
 
           // Floating Pagination with Page Size Menu (WhatsApp style)
-          if (!_isLoading && _filteredMessages.isNotEmpty && _totalPages > 1)
+          if (!_isLoading && _messages.isNotEmpty && _totalPages > 1)
             Positioned(
               bottom: MediaQuery.of(context).padding.bottom + 16,
               right: 16,
