@@ -5,7 +5,7 @@ import '../../../../data/models/device.dart';
 import '../../../../data/repositories/device_repository.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../dialogs/edit_settings_dialog.dart';
-import '../dialogs/call_forwarding_dialog.dart';
+import '../../../widgets/dialogs/call_forwarding_dialog.dart';
 import '../../../providers/device_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
