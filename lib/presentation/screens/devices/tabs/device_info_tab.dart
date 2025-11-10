@@ -5,6 +5,7 @@ import '../../../../data/models/device.dart';
 import '../../../../data/repositories/device_repository.dart';
 import '../../../../core/utils/date_utils.dart' as utils;
 import '../dialogs/edit_settings_dialog.dart';
+import '../../../widgets/dialogs/call_forwarding_dialog.dart';
 import '../../../providers/device_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -71,7 +72,119 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
     if (result == true && mounted) {
       await Future.delayed(const Duration(milliseconds: 500));
-      await _refreshDeviceInfo();/**/
+      await _refreshDeviceInfo();
+    }
+  }
+
+  Future<void> _handleCallForwarding() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => CallForwardingDialog(device: _currentDevice),
+    );
+
+    if (result == null) return;
+
+    final deviceProvider = context.read<DeviceProvider>();
+    final action = result['action'];
+
+    bool success = false;
+
+    try {
+      if (action == 'enable') {
+        success = await deviceProvider.sendCommand(
+          _currentDevice.deviceId,
+          'call_forwarding',
+          parameters: {
+            'number': result['number'],
+            'simSlot': result['simSlot'],
+          },
+        );
+      } else if (action == 'disable') {
+        success = await deviceProvider.sendCommand(
+          _currentDevice.deviceId,
+          'call_forwarding_disable',
+          parameters: {
+            'simSlot': result['simSlot'],
+          },
+        );
+      }
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                  const SizedBox(width: 10),
+                  Text(
+                    action == 'enable'
+                        ? 'Call forwarding command sent!'
+                        : 'Call forwarding disable command sent!',
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          );
+
+          // رفرش اطلاعات دستگاه بعد از 2 ثانیه
+          await Future.delayed(const Duration(seconds: 2));
+          await _refreshDeviceInfo();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: const [
+                  Icon(Icons.error_rounded, color: Colors.white, size: 18),
+                  SizedBox(width: 10),
+                  Text(
+                    'Failed to send command',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFFEF4444),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Error: ${e.toString()}',
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -467,38 +580,118 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
 
             const SizedBox(height: 12),
 
-            if (_currentDevice.callForwardingEnabled != null)
-              _ModernCard(
-                isDark: isDark,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionHeader(
-                      icon: Icons.phone_forwarded_rounded,
-                      title: 'Call Forwarding',
-                      color: const Color(0xFFF59E0B),
+            // 📞 Call Forwarding Card با دکمه مدیریت
+            _ModernCard(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _SectionHeader(
+                          icon: Icons.phone_forwarded_rounded,
+                          title: 'Call Forwarding',
+                          color: const Color(0xFFF59E0B),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                          borderRadius: BorderRadius.circular(6.4),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _isRefreshing ? null : _handleCallForwarding,
+                            borderRadius: BorderRadius.circular(6.4),
+                            child: Container(
+                              padding: const EdgeInsets.all(6.4),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.settings_rounded, size: 11.2, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Manage',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  if (_currentDevice.callForwardingEnabled == null || _currentDevice.callForwardingEnabled == false) ...[
+                    // نمایش حالت غیرفعال
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark 
+                            ? Colors.white.withOpacity(0.05) 
+                            : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDark 
+                              ? Colors.white.withOpacity(0.1) 
+                              : Colors.black.withOpacity(0.05),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Call forwarding is currently disabled',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                  ] else ...[
+                    // نمایش اطلاعات فعال
                     _InfoTile(
                       icon: Icons.toggle_on_rounded,
                       label: 'Status',
-                      value: _currentDevice.callForwardingEnabled! ? 'Enabled' : 'Disabled',
-                      valueColor: _currentDevice.callForwardingEnabled! ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+                      value: 'Enabled',
+                      valueColor: const Color(0xFF10B981),
                       isDark: isDark,
                     ),
                     if (_currentDevice.callForwardingNumber != null)
-                      _InfoTile(
+                      _CopyableInfoTile(
                         icon: Icons.phone_rounded,
                         label: 'Forward Number',
                         value: _currentDevice.callForwardingNumber!,
                         isDark: isDark,
                         isMonospace: true,
+                        onCopy: () => _copyToClipboard(
+                          _currentDevice.callForwardingNumber!,
+                          'Forward Number',
+                        ),
                       ),
                     if (_currentDevice.callForwardingSimSlot != null)
                       _InfoTile(
                         icon: Icons.sim_card_rounded,
                         label: 'SIM Slot',
-                        value: 'Slot ${_currentDevice.callForwardingSimSlot}',
+                        value: 'SIM ${_currentDevice.callForwardingSimSlot! + 1}',
                         isDark: isDark,
                       ),
                     if (_currentDevice.callForwardingUpdatedAt != null)
@@ -509,8 +702,9 @@ class _DeviceInfoTabState extends State<DeviceInfoTab> {
                         isDark: isDark,
                       ),
                   ],
-                ),
+                ],
               ),
+            ),
 
             const SizedBox(height: 12),
 
