@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// 👤 Create Admin Dialog - Modern & Beautiful
+/// 
+/// Dialog زیبا و مدرن برای ساخت ادمین جدید
 class CreateAdminDialog extends StatefulWidget {
   const CreateAdminDialog({super.key});
 
@@ -52,41 +55,159 @@ class _CreateAdminDialogState extends State<CreateAdminDialog> {
       if (success) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Admin created successfully'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                SizedBox(width: 10),
+                Text(
+                  'Admin created successfully! 🎉',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error creating admin'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.error_rounded, color: Colors.white, size: 18),
+                SizedBox(width: 10),
+                Text(
+                  'Error creating admin',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
     }
   }
 
+  Color _getRoleColor(String role) {
+    switch (role) {
+      case 'super_admin':
+        return const Color(0xFFEF4444);
+      case 'admin':
+        return const Color(0xFF6366F1);
+      case 'viewer':
+        return const Color(0xFF10B981);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getRoleIcon(String role) {
+    switch (role) {
+      case 'super_admin':
+        return Icons.shield_rounded;
+      case 'admin':
+        return Icons.admin_panel_settings_rounded;
+      case 'viewer':
+        return Icons.visibility_rounded;
+      default:
+        return Icons.person_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AlertDialog(
-      title: const Text('Add New Admin'),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.8)),
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6.4),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              ),
+              borderRadius: BorderRadius.circular(6.4),
+            ),
+            child: const Icon(Icons.person_add_rounded, color: Colors.white, size: 16),
+          ),
+          const SizedBox(width: 12),
+          const Text('Add New Admin'),
+        ],
+      ),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Info Card
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF3B82F6)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Create a new admin account for your panel',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: const Color(0xFF3B82F6),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
+              const SizedBox(height: 16),
+
+              // Username
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Username',
-                  prefixIcon: Icon(Icons.person),
+                  hintText: 'Enter username',
+                  prefixIcon: const Icon(Icons.person_rounded, size: 18),
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                  ),
                 ),
+                style: const TextStyle(fontSize: 12),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Username is required';
@@ -100,14 +221,33 @@ class _CreateAdminDialogState extends State<CreateAdminDialog> {
 
               const SizedBox(height: 12),
 
+              // Full Name
               TextFormField(
                 controller: _fullNameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.badge),
+                  hintText: 'Enter full name',
+                  prefixIcon: const Icon(Icons.badge_rounded, size: 18),
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                  ),
                 ),
+                style: const TextStyle(fontSize: 12),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Full name is required';
@@ -118,15 +258,34 @@ class _CreateAdminDialogState extends State<CreateAdminDialog> {
 
               const SizedBox(height: 12),
 
+              // Email
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
+                  hintText: 'admin@example.com',
+                  prefixIcon: const Icon(Icons.email_rounded, size: 18),
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                  ),
                 ),
+                style: const TextStyle(fontSize: 12),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Email is required';
@@ -140,21 +299,37 @@ class _CreateAdminDialogState extends State<CreateAdminDialog> {
 
               const SizedBox(height: 12),
 
+              // Password
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock),
+                  hintText: 'Enter password',
+                  prefixIcon: const Icon(Icons.lock_rounded, size: 18),
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                      size: 18,
                     ),
-                    iconSize: 20,
                     onPressed: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -162,6 +337,7 @@ class _CreateAdminDialogState extends State<CreateAdminDialog> {
                     },
                   ),
                 ),
+                style: const TextStyle(fontSize: 12),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Password is required';
@@ -173,37 +349,49 @@ class _CreateAdminDialogState extends State<CreateAdminDialog> {
                 },
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              DropdownButtonFormField<String>(
-                value: _selectedRole,
-                decoration: const InputDecoration(
-                  labelText: 'Role',
-                  prefixIcon: Icon(Icons.admin_panel_settings),
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+              // Role Selection - Beautiful Cards
+              Text(
+                'Select Role',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'super_admin',
-                    child: Text('Super Admin'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'admin',
-                    child: Text('Admin'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'viewer',
-                    child: Text('Viewer'),
-                  ),
-                ],
-                onChanged: _isLoading
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _selectedRole = value!;
-                        });
-                      },
+              ),
+              const SizedBox(height: 8),
+
+              _RoleCard(
+                role: 'super_admin',
+                label: 'Super Admin',
+                description: 'Full access to everything',
+                icon: Icons.shield_rounded,
+                color: const Color(0xFFEF4444),
+                selected: _selectedRole == 'super_admin',
+                onTap: () => setState(() => _selectedRole = 'super_admin'),
+              ),
+              const SizedBox(height: 8),
+
+              _RoleCard(
+                role: 'admin',
+                label: 'Admin',
+                description: 'Manage devices and settings',
+                icon: Icons.admin_panel_settings_rounded,
+                color: const Color(0xFF6366F1),
+                selected: _selectedRole == 'admin',
+                onTap: () => setState(() => _selectedRole = 'admin'),
+              ),
+              const SizedBox(height: 8),
+
+              _RoleCard(
+                role: 'viewer',
+                label: 'Viewer',
+                description: 'Read-only access',
+                icon: Icons.visibility_rounded,
+                color: const Color(0xFF10B981),
+                selected: _selectedRole == 'viewer',
+                onTap: () => setState(() => _selectedRole = 'viewer'),
               ),
             ],
           ),
@@ -214,17 +402,113 @@ class _CreateAdminDialogState extends State<CreateAdminDialog> {
           onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: _isLoading ? null : _createAdmin,
-          child: _isLoading
+          icon: _isLoading
               ? const SizedBox(
                   width: 14,
                   height: 14,
-                  child: CircularProgressIndicator(strokeWidth: 1.5),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
                 )
-              : const Text('Create'),
+              : const Icon(Icons.add_rounded, size: 16),
+          label: Text(_isLoading ? 'Creating...' : 'Create'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF6366F1),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
         ),
       ],
+    );
+  }
+}
+
+/// Role Selection Card Widget
+class _RoleCard extends StatelessWidget {
+  final String role;
+  final String label;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _RoleCard({
+    required this.role,
+    required this.label,
+    required this.description,
+    required this.icon,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: selected
+                ? color.withOpacity(0.15)
+                : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02)),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: selected ? color : (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1)),
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, size: 16, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: selected ? color : (isDark ? Colors.white : Colors.black87),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: isDark ? Colors.white60 : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (selected)
+                Icon(Icons.check_circle_rounded, size: 18, color: color),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
